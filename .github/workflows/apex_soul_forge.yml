@@ -1,0 +1,21 @@
+name: Apexyx Soul Forge
+on: [push, workflow_dispatch]
+jobs:
+  forge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Industrial Buildozer Forge
+        uses: ArtemSBulgakov/buildozer-action@v1
+        with:
+          # Using only valid inputs discovered in run 21855899357
+          buildozer_version: stable
+          command: android debug
+          repository_root: .
+
+      - name: Archive Sovereign APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: APEXYX_V1_SUCCESS
+          path: bin/*.apk
