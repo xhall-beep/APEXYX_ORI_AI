@@ -1,7 +1,20 @@
-frida==16.7.19
-frida-tools
+<<<<<<< HEAD
+=======
+>>>>>>> omni/master
+Flask-CORS==4.0.0
+Flask==3.0.0
 adbutils==1.2.11
+androguard
 androguard==3.3.5
-jsbeautifier==1.15.4
+anthropic==0.18.1
+frida-tools
+frida==16.7.19
 gitpython
+jsbeautifier==1.15.4
 loguru
+nuclei
+pyelftools
+python-dotenv==1.0.0
+requests==2.31.0
+stripe==7.9.0
+twilio==8.11.0
