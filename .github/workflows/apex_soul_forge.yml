@@ -9,6 +9,7 @@ jobs:
       - name: Industrial Buildozer Forge
         uses: ArtemSBulgakov/buildozer-action@v1
         with:
+          # Only using parameters confirmed as 'Valid' in log 21855899357
           buildozer_version: stable
           command: android debug
           repository_root: .
