@@ -3,20 +3,15 @@ on: [push, workflow_dispatch]
 jobs:
   forge:
     runs-on: ubuntu-latest
+    container:
+      image: kivy/buildozer:latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: System Dependency Injection
+      - name: Sovereign Industrial Build
         run: |
-          sudo apt-get update
-          sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
-          python3 -m pip install --user --upgrade Cython==0.29.33 buildozer
-
-      - name: Industrial Build Execution
-        run: |
-          # Force export of local bin for buildozer access
-          export PATH=$PATH:$HOME/.local/bin
-          # Execute build with automated license acceptance
+          # Use the container's pre-installed buildozer
+          # 'yes' automatically handles all SDK/NDK license prompts
           yes | buildozer android debug
         env:
           APP_ANDROID_ACCEPT_SDK_LICENSE: 1
