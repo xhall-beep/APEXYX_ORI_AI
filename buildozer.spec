@@ -4,7 +4,7 @@ package.name = apexyxori
 package.domain = org.svontz
 source.dir = .
 version = 1.0.0
-requirements = python3,kivy==2.3.0
+requirements = python3,kivy
 orientation = portrait
 android.archs = arm64-v8a
 android.accept_sdk_license = True
