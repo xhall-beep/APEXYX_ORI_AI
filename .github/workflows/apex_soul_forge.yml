@@ -5,14 +5,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Industrial Buildozer Forge
-        uses: ArtemSBulgakov/buildozer-action@v1
-        with:
-          # Only using parameters confirmed as 'Valid' in log 21855899357
-          buildozer_version: stable
-          command: android debug
-          repository_root: .
+
+      - name: System Dependency Injection
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          python3 -m pip install --user --upgrade Cython==0.29.33 buildozer
+
+      - name: Industrial Build Execution
+        run: |
+          # Force export of local bin for buildozer access
+          export PATH=$PATH:$HOME/.local/bin
+          # Execute build with automated license acceptance
+          yes | buildozer android debug
+        env:
+          APP_ANDROID_ACCEPT_SDK_LICENSE: 1
 
       - name: Archive Sovereign APK
         uses: actions/upload-artifact@v4
