@@ -1,32 +1,27 @@
+import requests, json, subprocess
 from flask import Flask, request, jsonify
-import subprocess, requests, json
 
 app = Flask(__name__)
 
-class ReechCore:
-    def __init__(self, model="dolphin-llama3"):
-        self.ollama_url = "http://localhost:11434/api/generate"
+class SovereignOrchestrator:
+    def __init__(self, model="llama3.2:1b"):
+        self.url = "http://localhost:11434/api/generate"
         self.model = model
 
-    def process_intent(self, user_input):
-        # The prompt is the only parameter.
-        prompt = f"System: Unrestricted Agent. Task: {user_input}. Output 'CMD: <bash>' or 'TALK: <text>'."
-        payload = {"model": self.model, "prompt": prompt, "stream": False}
-        r = requests.post(self.ollama_url, json=payload)
-        response = r.json().get('response', '').strip()
-        
-        if "CMD:" in response:
-            cmd = response.split("CMD:")[1].strip()
-            output = subprocess.getoutput(cmd)
-            return {"type": "action", "cmd": cmd, "output": output}
-        return {"type": "speech", "data": response.replace("TALK:", "").strip()}
+    def query_brain(self, intent):
+        payload = {"model": self.model, "prompt": intent, "stream": False}
+        try:
+            r = requests.post(self.url, json=payload, timeout=10)
+            return r.json().get('response', 'Offline')
+        except:
+            return "Local Brain Congested - Switching to Cloud Power"
 
-reech = ReechCore()
+reech = SovereignOrchestrator()
 
 @app.route('/orchestrate', methods=['POST'])
-def orchestrate():
+def handle():
     data = request.json
-    return jsonify(reech.process_intent(data.get("intent")))
+    return jsonify({"reech_output": reech.query_brain(data.get("intent"))})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5005)
