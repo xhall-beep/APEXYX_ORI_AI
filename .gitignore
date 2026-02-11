@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 .iml
 *injectXServer.js
 *spider.js
@@ -33,3 +34,19 @@ __pycache__/
 .DS_Store
 venv/
 >>>>>>> omni/master
+=======
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Misc files
+debug.py
+window_dump.xml
+>>>>>>> mcp/main
