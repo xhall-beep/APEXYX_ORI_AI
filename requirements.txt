@@ -12,9 +12,12 @@ frida==16.7.19
 gitpython
 jsbeautifier==1.15.4
 loguru
+mem0ai
 nuclei
+pydantic-ai
 pyelftools
 python-dotenv==1.0.0
+rclone
 requests==2.31.0
 stripe==7.9.0
 twilio==8.11.0
