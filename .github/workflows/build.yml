@@ -2,13 +2,13 @@ name: Build AI Node
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # Reverting to stable legacy support
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libtinfo6 libncurses5  # Bypassing the libtinfo5 error
+          sudo apt-get install -y libtinfo5 libncurses5
       - name: set up JDK 17
         uses: actions/setup-java@v3
         with:
