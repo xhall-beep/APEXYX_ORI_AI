@@ -17,7 +17,7 @@ jobs:
       - name: Install Buildozer Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libffi-dev perl python3-pip zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libsqlite3-dev
+          sudo apt-get install -y libffi-dev perl python3-pip zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libsqlite3-dev
           pip install --upgrade pip
           pip install buildozer cython requests
 
