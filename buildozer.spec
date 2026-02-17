@@ -1,6 +1,6 @@
 [app]
-title = Apexyx
-package.name = apexyx
+title = ApexyxShell
+package.name = apexyx.shell
 package.domain = org.svontz
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
@@ -15,7 +15,6 @@ android.allow_backup = True
 android.api = 35
 android.minapi = 21
 android.ndk = 27b
-# PHYSICAL PATH LOCK FOR 16KB
 android.ndk_path = /home/runner/work/APEXYX_ORI_AI/APEXYX_ORI_AI/android-ndk-r27b
 android.ant_flags = -Wl,-z,max-page-size=16384
 p4a.branch = master
