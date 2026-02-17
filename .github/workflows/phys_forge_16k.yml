@@ -10,28 +10,28 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Sovereign NDK & Toolchain Injection
+      - name: Sovereign NDK & Toolchain Anchor
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0" "setuptools"
-          # FORCE PHYSICAL LOCATION
           wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
           unzip -q android-ndk-r25c-linux.zip
-          mkdir -p ~/.buildozer/android/platform/
-          mv android-ndk-r25c ~/.buildozer/android/platform/android-ndk-r25c
-      - name: Physical 16KB Alignment & Path-Bridge
+          # SED INJECTION: Update the .spec to point to the WORKSPACE NDK
+          sed -i "s|android.ndk_path =.*|android.ndk_path = $GITHUB_WORKSPACE/android-ndk-r25c|g" buildozer.spec
+      - name: Physical 16KB Alignment & Static-Anchor
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
+          ANDROID_NDK_HOME: ${{ github.workspace }}/android-ndk-r25c
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # DIRECT MODULE CALL TO BYPASS PATH ISSUES
-          python3 -m buildozer android help
+          # FORCE RE-INIT WITH ANCHORED PATHS
+          python3 -m buildozer android debug --only-sdk-check || true
           # EXECUTE FORGE
           yes | python3 -m buildozer -v android debug
       - name: Deposit Asset
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx-16K-Bridge
+          name: Apexyx-16K-Anchored
           path: bin/*.apk
