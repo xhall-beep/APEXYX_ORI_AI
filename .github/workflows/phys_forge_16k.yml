@@ -10,27 +10,27 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Sovereign Toolchain Injection
+      - name: Sovereign Toolchain & NDK Hijack
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0" "setuptools"
-      - name: Shadow-Bootstrap 16KB Force
+          # LOCATE AND HIJACK NDK LINKER SCRIPT FOR 16KB ALIGNMENT
+          echo "🔨 Forcing NDK 16KB Alignment in source headers..."
+          find /usr/local/lib/android/sdk/ndk -name "link.h" -exec sed -i 's/PAGE_SIZE 4096/PAGE_SIZE 16384/g' {} + || true
+      - name: Hard-Bind 16KB Alignment
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
-          # FORCE SYSTEM TO USE LLD LINKER FOR 16KB ALIGNMENT
           LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
         run: |
           export PATH=$PATH:$HOME/.local/bin
           rm -rf .buildozer
-          # OVERRIDE THE SPEC TO FORCE 16KB ALIGNMENT FLAGS INTO THE ANDROID BUILD
           sed -i 's/^# android.extra_p4a_args =.*/android.extra_p4a_args = --use-link-optimization/' buildozer.spec
           sed -i 's/^# android.ndk_api =.*/android.ndk_api = 24/' buildozer.spec
-          # EXECUTE FORGE
           yes | python3 -m buildozer -v android debug
       - name: Deposit Asset
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx-16K-Shadow
+          name: Apexyx-16K-Sovereign
           path: bin/*.apk
