@@ -10,32 +10,27 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Sovereign Toolchain Injection
+      - name: Sovereign Dependencies & 16KB Toolchain
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
-          python3 -m pip install --user --upgrade "python-for-android" "cython<3.0" "setuptools"
-          wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
-          unzip -q android-ndk-r25c-linux.zip
-      - name: Direct 16KB Binary Forge
+          python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0" "setuptools"
+      - name: Forced 16KB Alignment Hijack
         env:
-          ANDROID_NDK_HOME: ${{ github.workspace }}/android-ndk-r25c
+          BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
+          # FORCE THE LINKER TO 16KB PAGE SIZE AT THE SYSTEM LEVEL
           LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
+          APP_LDFLAGS: "-Wl,-z,max-page-size=16384"
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # USE P4A DIRECTLY TO BYPASS BUILDOZER SDK LOOPS
-          p4a apk --private . \
-            --package=com.apexyx.sovereign \
-            --name="Apexyx 16K" \
-            --version=1.0 \
-            --bootstrap=sdl2 \
-            --requirements=python3,kivy \
-            --arch arm64-v8a \
-            --ndk-dir=$ANDROID_NDK_HOME \
-            --dist_name=apexyx_16k_bridge
+          # PURGE PREVIOUS ATTEMPTS TO ENSURE CLEAN STATE
+          rm -rf .buildozer
+          # INJECT 16KB FLAGS DIRECTLY INTO THE SPEC BEFORE IGNITION
+          sed -i 's/^#android.ndk_api =.*/android.ndk_api = 24/' buildozer.spec
+          yes | python3 -m buildozer -v android debug
       - name: Deposit Asset
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx-16K-Direct
-          path: "*.apk"
+          name: Apexyx-16K-Hijacked
+          path: bin/*.apk
