@@ -1,7 +1,7 @@
-name: Sovereign 16KB Forge
+name: Physical_16KB_Forge
 on: [push]
 jobs:
-  build:
+  forge_core:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -10,14 +10,14 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Sovereign NDK Direct-Inject
+      - name: Sovereign NDK Injection
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0"
           wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
           unzip -q android-ndk-r25c-linux.zip
-      - name: Sovereign 16KB Physical Forge
+      - name: Physical 16KB Alignment
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
           ANDROID_NDK_HOME: ${{ github.workspace }}/android-ndk-r25c
@@ -28,22 +28,23 @@ jobs:
 title = Apexyx
 package.name = apexyx
 package.domain = org.apexyx
-source.dir = .                                                      
-source.include_exts = py,png,jpg,kv,atlas                           
-version = 0.1                                                       
-requirements = python3,kivy                                         
-orientation = portrait                                              
-android.archs = arm64-v8a                                           
-android.api = 31                                                    
-android.ndk = 25c                                                   
-android.ndk_path = ${{ github.workspace }}/android-ndk-r25c         
-android.skip_update = False                                         
-android.accept_sdk_license = True                                   
-android.ldflags = -Wl,-z,max-page-size=16384 -fuse-ld=lld           
+source.dir = .
+source.include_exts = py,png,jpg,kv,atlas
+version = 0.1
+requirements = python3,kivy
+orientation = portrait
+android.archs = arm64-v8a
+android.api = 31
+android.ndk = 25c
+android.ndk_path = ${{ github.workspace }}/android-ndk-r25c
+android.skip_update = False
+android.accept_sdk_license = True
+# HARD-FORCED PHYSICAL PAGING
+android.ldflags = -Wl,-z,max-page-size=16384 -fuse-ld=lld
 SPEC
           yes | python3 -m buildozer -v android debug
       - name: Deposit Asset
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx-Shell
+          name: Apexyx-16K-Shell
           path: bin/*.apk
