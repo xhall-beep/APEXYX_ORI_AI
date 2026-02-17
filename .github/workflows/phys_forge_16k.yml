@@ -39,7 +39,6 @@ android.ndk = 25c
 android.ndk_path = ${{ github.workspace }}/android-ndk-r25c
 android.skip_update = False
 android.accept_sdk_license = True
-# HARD-FORCED PHYSICAL PAGING
 android.ldflags = -Wl,-z,max-page-size=16384 -fuse-ld=lld
 SPEC
           yes | python3 -m buildozer -v android debug
