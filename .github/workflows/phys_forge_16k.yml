@@ -15,19 +15,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0" "setuptools"
-      - name: Final Manifest Forge
+      - name: High-Verbosity Forge
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
           LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
-          # FORCE CORRECT NDK PATH
           ANDROID_NDK_HOME: "/usr/local/lib/android/sdk/ndk/27.3.13750724"
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # Clean and Forge
-          rm -rf .buildozer
-          yes | python3 -m buildozer -v android debug
-      - name: 📦 Deposit Baby APK
+          # Pipe everything to a file for extraction
+          python3 -m buildozer -v android debug > build_debug.log 2>&1 || true
+      - name: 📦 Deposit Diagnostic Logs
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx-16K-Sovereign
-          path: bin/*.apk
+          name: Build-Friction-Logs
+          path: build_debug.log
