@@ -10,29 +10,28 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Sovereign NDK & Toolchain Injection
+      - name: Sovereign Toolchain Hardening
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0" "setuptools"
-          # ANCHOR NDK PHYSICALLY
+          # FORCE NDK r25c INJECTION
           wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
           unzip -q android-ndk-r25c-linux.zip
-      - name: Hard-Bind 16KB Alignment
+      - name: Physical 16KB Forge & Link
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
           ANDROID_NDK_HOME: ${{ github.workspace }}/android-ndk-r25c
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # FORCE SPEC TO IGNORE UPDATES AND USE ANCHORED NDK
-          sed -i "s|# android.ndk_path =|android.ndk_path = $GITHUB_WORKSPACE/android-ndk-r25c|g" buildozer.spec
-          sed -i "s|android.accept_sdk_license =.*|android.accept_sdk_license = True|g" buildozer.spec
-          sed -i "s|android.skip_update =.*|android.skip_update = True|g" buildozer.spec
-          # EXECUTE FORGE WITH VERBOSE LOGGING
+          # REMOVE CACHE TO PREVENT POISONING
+          rm -rf .buildozer
+          # FORCE 16KB LINKER FLAGS INTO THE SPEC ENVIRONMENT
+          export LDFLAGS="-Wl,-z,max-page-size=16384 -fuse-ld=lld"
           yes | python3 -m buildozer -v android debug
       - name: Deposit Asset
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx-16K-HardBound
+          name: Apexyx-16K-Pure
           path: bin/*.apk
