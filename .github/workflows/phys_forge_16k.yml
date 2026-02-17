@@ -15,21 +15,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0" "setuptools"
-      - name: Titan Auto-Forge
+      - name: Relentless Auto-Forge
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
-          # FORCING 16KB alignment and disabling conflicting hardware checks
-          LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
           APP_ANDROID_ARCHS: "arm64-v8a"
-          # Bypassing the Freetype dependency trap
+          # TARGET ONLY: Forcing 16KB on the Android NDK Linker, not the Host
+          ANDROID_LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
           P4A_freetype_extra_args: "--with-harfbuzz=no --with-png=no --with-zlib=yes"
         run: |
           export PATH=$PATH:$HOME/.local/bin
           unset ANDROID_NDK_HOME ANDROID_SDK_HOME ANDROIDNDK ANDROIDSDK
           rm -rf .buildozer
-          # Execute Forge
+          # Using the specific target LDFLAGS to protect the host build
+          export LDFLAGS="$ANDROID_LDFLAGS"
           buildozer -v android debug
-      - name: 📦 Deposit Titan APK
+      - name: 📦 Deposit Relentless APK
         uses: actions/upload-artifact@v4
         with:
           name: Apexyx-16K-Sovereign

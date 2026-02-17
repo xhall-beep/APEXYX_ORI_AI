@@ -5,7 +5,7 @@ package.domain = org.apexyx
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
-requirements = python3,kivy==2.3.0,kivymd,pillow
+requirements = python3,kivy==2.3.0,kivymd,pillow,hostpython3
 orientation = portrait
 android.archs = arm64-v8a
 android.ndk = 27b
