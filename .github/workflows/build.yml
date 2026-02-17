@@ -15,9 +15,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld
           pip install --upgrade "buildozer>=1.5.0" cython
-          # The "Yes" pipe bypasses the license hang
-          # BUILDOZER_ALLOW_ORG_PROJECT_DIR=1 allows the cloud to run as root
           export BUILDOZER_ALLOW_ORG_PROJECT_DIR=1
+          # FORCED OVERRIDE: Injecting the 16KB page size into the global environment
+          export LDFLAGS="-Wl,-z,max-page-size=16384"
+          export APP_LDFLAGS="-Wl,-z,max-page-size=16384"
           yes | buildozer android debug
       - name: Deposit Asset
         uses: actions/upload-artifact@v4
