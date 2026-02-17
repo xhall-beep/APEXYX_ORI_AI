@@ -6,29 +6,27 @@ jobs:
     steps:
       - name: Checkout purified core
         uses: actions/checkout@v4
-        with:
-          submodules: false
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Install NDK 27b & Core
+      - name: Install System Core
         run: |
           sudo apt update
           sudo apt install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           pip install --upgrade buildozer cython
-          # Physically downloading NDK 27b to bypass local r25b corruption
-          wget https://dl.google.com/android/repository/android-ndk-r27b-linux.zip
+          wget -q https://dl.google.com/android/repository/android-ndk-r27b-linux.zip
           unzip -q android-ndk-r27b-linux.zip
-      - name: Forge 16KB Binary
+      - name: Specification Override & Forge
         run: |
-          # Pointing Buildozer directly to the fresh NDK
-          export ANDROID_NDK_HOME=$(pwd)/android-ndk-r27b
-          yes | buildozer android debug || true
-          sed -i "s|^android.ndk_path =.*|android.ndk_path = $ANDROID_NDK_HOME|" buildozer.spec
-          sed -i 's/^#android.ant_flags =/android.ant_flags = -Wl,-z,max-page-size=16384/' buildozer.spec
-          buildozer android debug
+          # Physically forcing the spec to ignore the local corrupted r25b
+          export NDK_PATH=$(pwd)/android-ndk-r27b
+          sed -i "s|^android.ndk_path =.*|android.ndk_path = $NDK_PATH|" buildozer.spec
+          sed -i 's|^android.ndk =.*|android.ndk = 27b|' buildozer.spec
+          sed -i 's|^#android.ant_flags =.*|android.ant_flags = -Wl,-z,max-page-size=16384|' buildozer.spec
+          # Bypassing license stalls to prevent 22-hour hangs
+          yes | buildozer android debug
       - name: Secure the 16KB Deposit
         uses: actions/upload-artifact@v4
         with:
