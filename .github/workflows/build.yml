@@ -18,14 +18,18 @@ jobs:
       - name: Sovereign 16KB Physical Forge
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
+          # FORCED 16KB ALIGNMENT HEADERS
           LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
           APP_LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
+          # Bypassing NDK verification hangs
+          ANDROID_NDK_HOME: ""
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # Ensure Buildozer is initialized before cleaning
-          python3 -m buildozer android clean || true
+          # Force architecture and NDK API 31+ in the spec file
           sed -i 's/# android.ndk_api = 21/android.ndk_api = 31/' buildozer.spec
           sed -i 's/android.archs = arm64-v8a, armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
+          # Clean and Forge with high-pressure logging
+          python3 -m buildozer android clean || true
           yes | python3 -m buildozer -v android debug
       - name: Deposit Asset
         uses: actions/upload-artifact@v4
