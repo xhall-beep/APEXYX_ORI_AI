@@ -18,16 +18,15 @@ jobs:
       - name: Sovereign 16KB Physical Forge
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
-          # Hard-coding the linker to use 16KB page alignment for Tensor G3
+          # Hard-locking the linker for 16KB physical memory pages
           LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
           APP_LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # Force the NDK API and enforce 16KB alignment in the spec
+          # Force the spec to use the 16KB-compatible NDK API 31+
           sed -i 's/# android.ndk_api = 21/android.ndk_api = 31/' buildozer.spec
           sed -i 's/android.archs = arm64-v8a, armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
-          # Pre-accept all Android SDK licenses to prevent the 1m hang
-          mkdir -p ~/.android && touch ~/.android/repositories.cfg
+          # Pre-accept all licenses to prevent interactive hangs
           yes | python3 -m buildozer -v android debug
       - name: Deposit Asset
         uses: actions/upload-artifact@v4
