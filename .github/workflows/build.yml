@@ -15,16 +15,22 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0"
-      - name: Sovereign Direct-Forge (16KB Physical Alignment)
+      - name: Sovereign 16KB Physical Forge
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
+          # Hard-coding the linker to use 16KB page alignment for Tensor G3
           LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
           APP_LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # Force the 16KB-compatible NDK API
+          # Force the NDK API and enforce 16KB alignment in the spec
           sed -i 's/# android.ndk_api = 21/android.ndk_api = 31/' buildozer.spec
-          # Pre-create the Android SDK directory to ensure write access
-          mkdir -p ~/.buildozer/android/platform
-          # Forge with absolute path and verbose logging
-          python3 -m buildozer -v android debug
+          sed -i 's/android.archs = arm64-v8a, armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
+          # Pre-accept all Android SDK licenses to prevent the 1m hang
+          mkdir -p ~/.android && touch ~/.android/repositories.cfg
+          yes | python3 -m buildozer -v android debug
+      - name: Deposit Asset
+        uses: actions/upload-artifact@v4
+        with:
+          name: Apexyx-Shell
+          path: bin/*.apk
