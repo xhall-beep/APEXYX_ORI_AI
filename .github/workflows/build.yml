@@ -5,26 +5,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Java 17
+      - name: Setup Forge Environment
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Manifest NDK 27b & Forge 16KB
+      - name: Manifest 16KB Toolchain
         run: |
-          sudo apt update
-          sudo apt install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          sudo apt-get update
+          # PHYSICALLY INSTALLING THE 16KB LINKER (LLD)
+          sudo apt-get install -y lld python3-pip zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           pip install --upgrade buildozer cython
-          # Physically downloading the 16KB-compatible toolchain
+          # Fetching the purified r27b
           wget -q https://dl.google.com/android/repository/android-ndk-r27b-linux.zip
           unzip -q android-ndk-r27b-linux.zip
-          # Forcing the spec to use the physical path of r27b
-          export NDK_PATH=$(pwd)/android-ndk-r27b
+          echo "NDK_PATH=$(pwd)/android-ndk-r27b" >> $GITHUB_ENV
+      - name: High-Pressure Forge
+        run: |
+          # Hard-locking the spec to the physical r27b path
           sed -i "s|^android.ndk_path =.*|android.ndk_path = $NDK_PATH|" buildozer.spec
           sed -i "s|^android.ndk =.*|android.ndk = 27b|" buildozer.spec
-          # High-pressure execution
+          # Triggering the 16KB Binary Manifestation
           yes | buildozer android debug
-      - name: Secure the 16KB Deposit
+      - name: Deposit 16KB Asset
         uses: actions/upload-artifact@v4
         with:
           name: Apexyx-16KB-Core
