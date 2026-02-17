@@ -5,12 +5,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build with Buildozer Action
-        uses: ArtemSBulgakov/buildozer-action@v1
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          buildozer_version: master
-          python_version: 3.11
-          # This action contains pre-cached 16KB-aligned linkers
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Raw 16KB Forge Execution
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld
+          pip install --upgrade buildozer cython
+          # Force 16KB alignment via environment injection
+          export LDFLAGS="-Wl,-z,max-page-size=16384"
+          buildozer android debug
       - name: Deposit Asset
         uses: actions/upload-artifact@v4
         with:
