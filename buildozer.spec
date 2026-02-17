@@ -15,7 +15,7 @@ android.allow_backup = True
 android.api = 35
 android.minapi = 21
 android.ndk = 27b
-android.ndk_path = /home/runner/work/APEXYX_ORI_AI/APEXYX_ORI_AI/android-ndk-r27b
+# android.ndk_path =
 android.ant_flags = -Wl,-z,max-page-size=16384
 p4a.branch = master
 [buildozer]

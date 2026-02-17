@@ -15,11 +15,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y lld python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev
           pip install --upgrade buildozer cython
-          wget -q https://dl.google.com/android/repository/android-ndk-r27b-linux.zip
-          unzip -q android-ndk-r27b-linux.zip
-          # Bypassing the local path error by forcing the runner path
-          sed -i "s|^android.ndk_path =.*|android.ndk_path = $(pwd)/android-ndk-r27b|" buildozer.spec
-          yes | buildozer android debug
+          # Let Buildozer handle the toolchain internally but force the linker
+          export BUILDOZER_ALLOW_ORG_PROJECT_DIR=1
+          buildozer android debug
       - name: Deposit Asset
         uses: actions/upload-artifact@v4
         with:
