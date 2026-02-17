@@ -5,23 +5,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Java 17
+      - name: Java 17 Sync
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Forge 16KB Core
+      - name: High-Pressure Forge
         run: |
           pip install --upgrade buildozer cython
-          buildozer init
-          # Injecting the Husky-Core alignment (16KB)
-          sed -i 's/^# android.ant_flags =/android.ant_flags = -Wl,-z,max-page-size=16384/' buildozer.spec
-          sed -i 's/^android.api = 31/android.api = 33/' buildozer.spec
-          # Forcing NDK 27b to support 16KB page size
-          sed -i 's/^# android.ndk = 25b/android.ndk = 27b/' buildozer.spec
-          # Bypassing the 22-hour license stall
+          # No init required; using the pre-optimized spec
           yes | buildozer android debug
-      - name: Secure the Deposit
+      - name: Deposit Asset
         uses: actions/upload-artifact@v4
         with:
           name: Apexyx-16KB-Core
