@@ -4,26 +4,25 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Purify and Checkout
-        uses: actions/checkout@v4
-      - name: Setup Core Java
+      - uses: actions/checkout@v4
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Forge 16KB Binary
+      - name: Forge 16KB Core
         run: |
           pip install --upgrade buildozer cython
-          # Resetting the spec to absolute defaults to purge r25b corruption
           buildozer init
-          # Force-injecting 16KB alignment and NDK 27b requirements
+          # Injecting the Husky-Core alignment (16KB)
           sed -i 's/^# android.ant_flags =/android.ant_flags = -Wl,-z,max-page-size=16384/' buildozer.spec
           sed -i 's/^android.api = 31/android.api = 33/' buildozer.spec
-          sed -i 's/^android.ndk = 25b/android.ndk = 27b/' buildozer.spec
-          # High-pressure build protocol
+          # Forcing NDK 27b to support 16KB page size
+          sed -i 's/^# android.ndk = 25b/android.ndk = 27b/' buildozer.spec
+          # Bypassing the 22-hour license stall
           yes | buildozer android debug
-      - name: Deposit 16KB Asset
+      - name: Secure the Deposit
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx-Sovereign-Core
+          name: Apexyx-16KB-Core
           path: bin/*.apk
