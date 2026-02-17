@@ -12,8 +12,8 @@ jobs:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
           LDFLAGS: "-Wl,-z,max-page-size=16384"
         run: |
-          # Bypassing the interactive pipe entirely
-          buildozer android debug
+          # Force license acceptance and trigger build
+          yes | buildozer -v android debug
       - name: Deposit Asset
         uses: actions/upload-artifact@v4
         with:
