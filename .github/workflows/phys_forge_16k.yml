@@ -15,20 +15,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0" "setuptools"
-          # PHYSICAL INJECTION OF NDK r25c
           wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
           unzip -q android-ndk-r25c-linux.zip
-      - name: Physical 16KB Alignment
+      - name: Physical 16KB Alignment & Forced Init
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
           ANDROID_NDK_HOME: ${{ github.workspace }}/android-ndk-r25c
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # Ensure Buildozer uses our injected NDK
+          # FORCED INITIALIZATION TO LOCK PATHS
+          buildozer android help
+          # EXECUTE WITH LLD LINKER OVERRIDE
           yes | python3 -m buildozer -v android debug
       - name: Deposit Asset
-        if: success()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx-16K-Final
+          name: Apexyx-16K-Steel
           path: bin/*.apk
