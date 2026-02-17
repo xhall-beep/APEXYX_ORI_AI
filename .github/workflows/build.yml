@@ -13,11 +13,12 @@ jobs:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
           LDFLAGS: "-Wl,-z,max-page-size=16384"
         run: |
-          # Move into the checked-out directory to ensure buildozer.spec is visible
+          # Force absolute control over the workspace permissions
+          chmod -R 777 .
+          # Move into the workspace and ensure a clean slate
           cd $GITHUB_WORKSPACE
-          # Clean any previous failed toolchain attempts in the cloud
           rm -rf .buildozer
-          # Forge with auto-license acceptance and verbose logging
+          # Trigger the Forge with auto-license acceptance
           yes | buildozer -v android debug
       - name: Deposit Asset
         uses: actions/upload-artifact@v4
