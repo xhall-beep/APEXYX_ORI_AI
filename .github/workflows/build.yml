@@ -5,19 +5,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Forge
-        uses: actions/setup-java@v4
+      - name: Build with Buildozer Action
+        uses: ArtemSBulgakov/buildozer-action@v1
         with:
-          distribution: 'temurin'
-          java-version: '17'
-      - name: Manifest 16KB Shell
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y lld python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev
-          pip install --upgrade buildozer cython
-          # Let Buildozer handle the toolchain internally but force the linker
-          export BUILDOZER_ALLOW_ORG_PROJECT_DIR=1
-          buildozer android debug
+          buildozer_version: master
+          python_version: 3.11
+          # This action contains pre-cached 16KB-aligned linkers
       - name: Deposit Asset
         uses: actions/upload-artifact@v4
         with:
