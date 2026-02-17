@@ -10,25 +10,20 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
       - name: Install System Core
         run: |
           sudo apt update
           sudo apt install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           pip install --upgrade buildozer cython
-      - name: Accept Android Licenses & Forge
+      - name: Forge 16KB APK
         run: |
-          # Bypassing the interactive prompt bottleneck
+          # Automatically bypassing license prompts
           yes | buildozer android debug || true
-          # Injecting the 16KB alignment and NDK 27b into the live build state
+          # Forcing hardware alignment for Pixel 8 Pro
           sed -i 's/^#android.ant_flags =/android.ant_flags = -Wl,-z,max-page-size=16384/' buildozer.spec
           sed -i 's/^android.ndk = .*/android.ndk = 27b/' buildozer.spec
-          # Final construction
           buildozer android debug
-      - name: Secure the 16KB Core
+      - name: Secure the Deposit
         uses: actions/upload-artifact@v4
         with:
           name: Apexyx-16KB-Debug
