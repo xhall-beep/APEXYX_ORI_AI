@@ -10,22 +10,21 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Sovereign Environment Hardening
+      - name: Install Critical Build Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld
-          # Lock Buildozer to 1.5.0 for stability and force Cython 0.29.33
-          pip install --user --upgrade buildozer==1.5.0 "cython<3.0"
+          pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0"
           echo "$HOME/.local/bin" >> $GITHUB_PATH
-      - name: Forge ApexyxShell
+      - name: Sovereign Direct-Forge (16KB Enforced)
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
-          LDFLAGS: "-Wl,-z,max-page-size=16384"
+          APP_ANDROID_ARCH: arm64-v8a
           APP_LDFLAGS: "-Wl,-z,max-page-size=16384"
         run: |
-          # Use the absolute path to ensure no "command not found" leaks
           export PATH=$PATH:$HOME/.local/bin
-          # Pre-accept licenses via sdkmanager to prevent hang
+          # Ensure Buildozer recognizes the 16KB alignment in the spec
+          sed -i 's/# android.ndk_api = 21/android.ndk_api = 31/' buildozer.spec
           yes | buildozer -v android debug
       - name: Deposit Asset
         uses: actions/upload-artifact@v4
