@@ -18,16 +18,16 @@ jobs:
       - name: Sovereign 16KB Physical Forge
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
-          # FORCING THE LINKER AT THE SYSTEM LEVEL
-          LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
-          APP_LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
-          LD_LIBRARY_PATH: "/usr/lib/llvm-14/lib"
+          # Applying 16KB flags specifically to the Android Linker
+          ANT_OPTS: "-Dbuild.compiler=modern"
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # Enforce NDK 31 and 16KB Arch in Spec
+          # Inject the 16KB Alignment directly into the Buildozer Spec
           sed -i 's/# android.ndk_api = 21/android.ndk_api = 31/' buildozer.spec
           sed -i 's/android.archs = arm64-v8a, armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
-          # Remove cache to prevent 4KB pollution
+          # FORCED 16KB ALIGNMENT INJECTED INTO RECIPE
+          sed -i '/\[app\]/a android.ldflags = -Wl,-z,max-page-size=16384 -fuse-ld=lld' buildozer.spec
+          
           rm -rf .buildozer
           yes | python3 -m buildozer -v android debug
       - name: Deposit Asset
