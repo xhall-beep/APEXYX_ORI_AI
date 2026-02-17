@@ -20,15 +20,30 @@ jobs:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # Force a fresh, 16KB-aligned spec from scratch
-          buildozer init
-          sed -i 's/package.name = myapp/package.name = apexyx/' buildozer.spec
-          sed -i 's/package.domain = org.test/package.domain = org.apexyx/' buildozer.spec
-          sed -i 's/android.archs = arm64-v8a, armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
-          sed -i 's/# android.ndk_api = 21/android.ndk_api = 31/' buildozer.spec
-          # The Secret Sauce: Clean line injection for the 16KB Linker
-          sed -i '/android.api = 31/a android.ldflags = -Wl,-z,max-page-size=16384 -fuse-ld=lld' buildozer.spec
-          
+          # 16KB Silicon Direct-Injection
+          cat << 'SPEC' > buildozer.spec
+[app]
+title = Apexyx
+package.name = apexyx
+package.domain = org.apexyx
+source.dir = .
+source.include_exts = py,png,jpg,kv,atlas
+version = 0.1
+requirements = python3,kivy
+orientation = portrait
+osx.python_version = 3
+osx.kivy_version = 1.9.1
+fullscreen = 0
+android.archs = arm64-v8a
+android.api = 31
+android.ndk_api = 31
+android.minapi = 21
+android.sdk = 31
+android.skip_update = False
+android.accept_sdk_license = True
+# CRITICAL: 16KB PHYSICAL ALIGNMENT LINKER FLAGS
+android.ldflags = -Wl,-z,max-page-size=16384 -fuse-ld=lld
+SPEC
           rm -rf .buildozer
           yes | python3 -m buildozer -v android debug
       - name: Deposit Asset
