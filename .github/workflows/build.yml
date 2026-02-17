@@ -13,13 +13,11 @@ jobs:
       - name: Sovereign Toolchain Hardening
         run: |
           sudo apt-get update
-          # Explicitly installing LLVM/LLD for 16KB alignment
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0"
       - name: Sovereign 16KB Physical Forge
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
-          # Hard-coding the path to the system linker to bypass NDK ambiguity
           LD: /usr/bin/ld.lld
           LDFLAGS: "-Wl,-z,max-page-size=16384"
         run: |
@@ -41,7 +39,6 @@ android.minapi = 21
 android.sdk = 31
 android.skip_update = False
 android.accept_sdk_license = True
-# FORCED 16KB LINKER PARAMETERS
 android.ldflags = -Wl,-z,max-page-size=16384 -fuse-ld=lld
 SPEC
           rm -rf .buildozer
