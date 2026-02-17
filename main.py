@@ -1,14 +1,13 @@
-# Forge-ID: 16KB-SYNC-v1.0.1
 from kivy.app import App
 from kivy.uix.button import Button
 
-class ApexyxApp(App):
+class ApexyxShell(App):
     def build(self):
         return Button(
-            text="Apexyx Core: Online\n[Version 1.0.1]",
-            font_size='20sp',
-            background_color=(0, 0.7, 0.9, 1)
+            text="ApexyxShell v0.1\n[Awaiting Evolution]",
+            font_size='22sp',
+            background_color=(0, 0.5, 0.8, 1)
         )
 
 if __name__ == "__main__":
-    ApexyxApp().run()
+    ApexyxShell().run()
