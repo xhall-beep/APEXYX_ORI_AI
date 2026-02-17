@@ -11,15 +11,18 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - name: Raw 16KB Forge Execution
+        env:
+          BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
+          LDFLAGS: "-Wl,-z,max-page-size=16384"
+          APP_LDFLAGS: "-Wl,-z,max-page-size=16384"
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld
           pip install --upgrade "buildozer>=1.5.0" cython
-          export BUILDOZER_ALLOW_ORG_PROJECT_DIR=1
-          # FORCED OVERRIDE: Injecting the 16KB page size into the global environment
-          export LDFLAGS="-Wl,-z,max-page-size=16384"
-          export APP_LDFLAGS="-Wl,-z,max-page-size=16384"
-          yes | buildozer android debug
+          # Direct license acceptance via sdkmanager before buildozer starts
+          mkdir -p ~/.android && touch ~/.android/repositories.cfg
+          # Trigger the Forge silently
+          yes | buildozer -v android debug
       - name: Deposit Asset
         uses: actions/upload-artifact@v4
         with:
