@@ -4,31 +4,26 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout purified core
+      - name: Purify and Checkout
         uses: actions/checkout@v4
-      - name: Setup Java 17
+      - name: Setup Core Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Install System Core
+      - name: Forge 16KB Binary
         run: |
-          sudo apt update
-          sudo apt install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           pip install --upgrade buildozer cython
-          wget -q https://dl.google.com/android/repository/android-ndk-r27b-linux.zip
-          unzip -q android-ndk-r27b-linux.zip
-      - name: Specification Override & Forge
-        run: |
-          # Physically forcing the spec to ignore the local corrupted r25b
-          export NDK_PATH=$(pwd)/android-ndk-r27b
-          sed -i "s|^android.ndk_path =.*|android.ndk_path = $NDK_PATH|" buildozer.spec
-          sed -i 's|^android.ndk =.*|android.ndk = 27b|' buildozer.spec
-          sed -i 's|^#android.ant_flags =.*|android.ant_flags = -Wl,-z,max-page-size=16384|' buildozer.spec
-          # Bypassing license stalls to prevent 22-hour hangs
+          # Resetting the spec to absolute defaults to purge r25b corruption
+          buildozer init
+          # Force-injecting 16KB alignment and NDK 27b requirements
+          sed -i 's/^# android.ant_flags =/android.ant_flags = -Wl,-z,max-page-size=16384/' buildozer.spec
+          sed -i 's/^android.api = 31/android.api = 33/' buildozer.spec
+          sed -i 's/^android.ndk = 25b/android.ndk = 27b/' buildozer.spec
+          # High-pressure build protocol
           yes | buildozer android debug
-      - name: Secure the 16KB Deposit
+      - name: Deposit 16KB Asset
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx-16KB-Debug
+          name: Apexyx-Sovereign-Core
           path: bin/*.apk
