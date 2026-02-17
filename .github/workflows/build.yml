@@ -10,19 +10,18 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Sovereign NDK Injection
+      - name: Sovereign NDK Hardening
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0"
-          # Manually fetching NDK r25c which has stable 16KB support
+          # Direct Injection of r25c
           wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
           unzip -q android-ndk-r25c-linux.zip
       - name: Sovereign 16KB Physical Forge
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
           ANDROID_NDK_HOME: ${{ github.workspace }}/android-ndk-r25c
-          LD: /usr/bin/ld.lld
         run: |
           export PATH=$PATH:$HOME/.local/bin
           cat << 'SPEC' > buildozer.spec
@@ -41,7 +40,6 @@ android.ndk = 25c
 android.ndk_path = ${{ github.workspace }}/android-ndk-r25c
 android.skip_update = False
 android.accept_sdk_license = True
-# HARD-LINKING 16KB ALIGNMENT
 android.ldflags = -Wl,-z,max-page-size=16384 -fuse-ld=lld
 SPEC
           yes | python3 -m buildozer -v android debug
