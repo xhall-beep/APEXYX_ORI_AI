@@ -10,7 +10,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Sovereign NDK Hardening
+      - name: Sovereign NDK Direct-Inject
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
@@ -28,18 +28,18 @@ jobs:
 title = Apexyx
 package.name = apexyx
 package.domain = org.apexyx
-source.dir = .
-source.include_exts = py,png,jpg,kv,atlas
-version = 0.1
-requirements = python3,kivy
-orientation = portrait
-android.archs = arm64-v8a
-android.api = 31
-android.ndk = 25c
-android.ndk_path = ${{ github.workspace }}/android-ndk-r25c
-android.skip_update = False
-android.accept_sdk_license = True
-android.ldflags = -Wl,-z,max-page-size=16384 -fuse-ld=lld
+source.dir = .                                                      
+source.include_exts = py,png,jpg,kv,atlas                           
+version = 0.1                                                       
+requirements = python3,kivy                                         
+orientation = portrait                                              
+android.archs = arm64-v8a                                           
+android.api = 31                                                    
+android.ndk = 25c                                                   
+android.ndk_path = ${{ github.workspace }}/android-ndk-r25c         
+android.skip_update = False                                         
+android.accept_sdk_license = True                                   
+android.ldflags = -Wl,-z,max-page-size=16384 -fuse-ld=lld           
 SPEC
           yes | python3 -m buildozer -v android debug
       - name: Deposit Asset
