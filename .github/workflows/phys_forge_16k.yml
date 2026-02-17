@@ -15,15 +15,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0" "setuptools"
-      - name: Absolute Forge
+      - name: Clean Managed Forge
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
-          # Forced absolute paths to bypass the ${{ }} ghost
-          ANDROID_SDK_HOME: "/usr/local/lib/android/sdk"
-          ANDROID_NDK_HOME: "/usr/local/lib/android/sdk/ndk/27.3.13750724"
+          LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          export LDFLAGS="-Wl,-z,max-page-size=16384 -fuse-ld=lld"
           rm -rf .buildozer
-          # Direct execution with API 33 (most stable for 16KB alignment currently)
+          # Let Buildozer download and manage its own NDK to avoid path ghosts
           yes | buildozer android debug
+      - name: 📦 Deposit Baby APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Apexyx-16K-Sovereign
+          path: bin/*.apk
