@@ -13,14 +13,17 @@ jobs:
       - name: Sovereign Toolchain Hardening
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld
+          # Explicitly installing LLVM/LLD for 16KB alignment
+          sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0"
       - name: Sovereign 16KB Physical Forge
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
+          # Hard-coding the path to the system linker to bypass NDK ambiguity
+          LD: /usr/bin/ld.lld
+          LDFLAGS: "-Wl,-z,max-page-size=16384"
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # 16KB Silicon Direct-Injection
           cat << 'SPEC' > buildozer.spec
 [app]
 title = Apexyx
@@ -31,9 +34,6 @@ source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
 requirements = python3,kivy
 orientation = portrait
-osx.python_version = 3
-osx.kivy_version = 1.9.1
-fullscreen = 0
 android.archs = arm64-v8a
 android.api = 31
 android.ndk_api = 31
@@ -41,7 +41,7 @@ android.minapi = 21
 android.sdk = 31
 android.skip_update = False
 android.accept_sdk_license = True
-# CRITICAL: 16KB PHYSICAL ALIGNMENT LINKER FLAGS
+# FORCED 16KB LINKER PARAMETERS
 android.ldflags = -Wl,-z,max-page-size=16384 -fuse-ld=lld
 SPEC
           rm -rf .buildozer
