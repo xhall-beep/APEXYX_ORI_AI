@@ -1,14 +1,14 @@
+# Forge-ID: 16KB-SYNC-v1.0.1
 from kivy.app import App
-from kivy.uix.label import Label
-from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.button import Button
 
-class ApexyxCore(App):
+class ApexyxApp(App):
     def build(self):
-        # This layout is your canvas for future upgrades
-        self.root = BoxLayout()
-        self.label = Label(text="Apexyx Sovereign Core v1.0\nStatus: Online & Upgradable")
-        self.root.add_widget(self.label)
-        return self.root
+        return Button(
+            text="Apexyx Core: Online\n[Version 1.0.1]",
+            font_size='20sp',
+            background_color=(0, 0.7, 0.9, 1)
+        )
 
 if __name__ == "__main__":
-    ApexyxCore().run()
+    ApexyxApp().run()
