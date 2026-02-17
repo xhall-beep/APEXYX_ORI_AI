@@ -5,25 +5,40 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
+
       - name: Sovereign Toolchain
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0" "setuptools"
-      - name: Clean Managed Forge
+
+      - name: Sanitized Auto-Forge
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
+          # Injecting 16KB alignment flags directly into the global environment
           LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
+          APP_ANDROID_ARCHS: "arm64-v8a"
         run: |
           export PATH=$PATH:$HOME/.local/bin
+          
+          # CRITICAL: Amputate the ghost variables identified in the logs
+          unset ANDROID_NDK_HOME
+          unset ANDROID_SDK_HOME
+          unset ANDROIDNDK
+          unset ANDROIDSDK
+          
+          # Forced cleanup of previous failed states
           rm -rf .buildozer
-          # Let Buildozer download and manage its own NDK to avoid path ghosts
-          yes | buildozer android debug
+          
+          # Execute with high verbosity to capture the exact moment of toolchain init
+          buildozer -v android debug
+          
       - name: 📦 Deposit Baby APK
         uses: actions/upload-artifact@v4
         with:
