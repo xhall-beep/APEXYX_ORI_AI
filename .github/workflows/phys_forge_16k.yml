@@ -21,10 +21,8 @@ jobs:
           ANDROID_NDK_HOME: ${{ github.workspace }}/android-ndk-r25c
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # Force buildozer to show full logs to catch the 'Industrial Build' error
           yes | python3 -m buildozer -v android debug
       - name: Deposit Asset
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: Apexyx-16K-Stable
