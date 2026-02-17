@@ -14,21 +14,19 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld
-          pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0"
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0"
       - name: Sovereign Direct-Forge (16KB Physical Alignment)
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
-          # Hard-locking the linker to LLD for 16KB support
           LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
           APP_LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
         run: |
+          # Use python3 -m to bypass PATH leaks
           export PATH=$PATH:$HOME/.local/bin
-          # Force the spec to use the 16KB-compatible NDK API
+          # Force the 16KB-compatible NDK API
           sed -i 's/# android.ndk_api = 21/android.ndk_api = 31/' buildozer.spec
-          # Clean build to ensure no 4KB artifacts remain
-          buildozer android clean
-          yes | buildozer -v android debug
+          # Forge with auto-license acceptance - skipping 'clean' to avoid fresh-run errors
+          yes | python3 -m buildozer -v android debug
       - name: Deposit Asset
         uses: actions/upload-artifact@v4
         with:
