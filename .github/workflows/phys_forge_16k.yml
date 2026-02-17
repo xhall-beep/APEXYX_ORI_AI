@@ -10,27 +10,22 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Sovereign Toolchain
+      - name: Clean Sovereign Toolchain
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0" "setuptools"
-      - name: Deep-Forge Execution
+      - name: Standard 16KB Forge
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
-          CFLAGS: "-mrelax-all -Wa,-mrelax-all"
           LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          yes | python3 -m buildozer -v android debug || echo "Bypassing minor wrap errors..."
-      - name: 🔍 Global Asset Search
-        run: |
-          echo "🔎 Hunting for hidden APKs..."
-          mkdir -p final_assets
-          find . -name "*.apk" -exec cp {} final_assets/ \;
-          ls -R final_assets/
-      - name: 📦 Deposit Found Assets
+          # Delete local buildozer files to force a fresh manifest
+          rm -rf .buildozer
+          yes | python3 -m buildozer -v android debug
+      - name: 📦 Deposit Baby APK
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx-16K-Extraction
-          path: final_assets/
+          name: Apexyx-16K-Sovereign
+          path: bin/*.apk
