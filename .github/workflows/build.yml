@@ -3,22 +3,25 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: kivy/buildozer:latest
-      options: --user root
     steps:
       - uses: actions/checkout@v4
-      - name: Sovereign Direct-Forge
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Sovereign Ground-Up Environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld
+          pip install --upgrade "buildozer>=1.5.0" cython
+      - name: Forge ApexyxShell
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
           LDFLAGS: "-Wl,-z,max-page-size=16384"
+          APP_LDFLAGS: "-Wl,-z,max-page-size=16384"
         run: |
-          # Force absolute control over the workspace permissions
-          chmod -R 777 .
-          # Move into the workspace and ensure a clean slate
-          cd $GITHUB_WORKSPACE
-          rm -rf .buildozer
-          # Trigger the Forge with auto-license acceptance
+          # Ensure licenses are accepted silently
           yes | buildozer -v android debug
       - name: Deposit Asset
         uses: actions/upload-artifact@v4
