@@ -5,10 +5,10 @@ package.domain = org.apexyx
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
-requirements = python3
+requirements = python3,kivy
 orientation = portrait
 android.archs = arm64-v8a
-android.ndk = 25b
+android.ndk = 28b
 android.skip_update = False
 android.accept_sdk_license = True
 android.ldflags = -Wl,-z,max-page-size=16384 -fuse-ld=lld
