@@ -15,24 +15,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0" "setuptools"
-      - name: Omnipotent Auto-Forge
+      - name: Core-Breaker Forge
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
-          # HARD-CODING the linker to use LLD and 16KB alignment globally
-          LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
-          # Disabling the Harfbuzz trap that killed the previous sanitized runs
+          # Applying 16KB ONLY to the Android Target LDFLAGS
+          ANDROID_LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
+          # Bypassing the Freetype/Harfbuzz trap
           P4A_freetype_extra_args: "--with-harfbuzz=no --with-png=no --with-zlib=yes"
+          # FORCING the 16KB flag into the actual python-for-android toolchain
+          EXTRA_P4A_ARGS: "--force-batch --use-llvm-linker"
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # Creating a custom NDK wrapper to FORCE the alignment
-          mkdir -p $HOME/bin
-          echo -e '#!/bin/bash\nld.lld -z max-page-size=16384 "$@"' > $HOME/bin/ld
-          chmod +x $HOME/bin/ld
-          export PATH=$HOME/bin:$PATH
-          
+          unset ANDROID_NDK_HOME ANDROID_SDK_HOME ANDROIDNDK ANDROIDSDK
           rm -rf .buildozer
+          
+          # Injecting flags into the environment that p4a specifically reads
+          export LDFLAGS="$ANDROID_LDFLAGS"
           buildozer -v android debug
-      - name: 📦 Deposit Omnipotent APK
+      - name: 📦 Deposit Sovereign APK
         uses: actions/upload-artifact@v4
         with:
           name: Apexyx-16K-Sovereign
