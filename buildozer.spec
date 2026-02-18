@@ -1,15 +1,18 @@
 [app]
-title = Apexyx
-package.name = apexyx
-package.domain = org.apexyx
+title = REECH
+package.name = reech.vessel
+package.domain = org.reech
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
-version = 0.1
-requirements = python3,kivy,requests,certifi
+version = 1.0.0
+requirements = python3,kivy==2.3.0,requests,certifi
 orientation = portrait
+osx.python_version = 3
+osx.kivy_version = 2.3.0
+fullscreen = 1
 android.archs = arm64-v8a
+android.allow_backup = True
+android.api = 34
+android.minapi = 21
 android.ndk = 25b
-android.skip_update = False
-android.accept_sdk_license = True
-android.ldflags = -Wl,-z,max-page-size=16384 -fuse-ld=lld
-android.ndk_api = 24
+p4a.branch = master
