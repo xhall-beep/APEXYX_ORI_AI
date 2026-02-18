@@ -12,4 +12,4 @@ android.ndk = 25b
 android.skip_update = False
 android.accept_sdk_license = True
 android.ldflags = -Wl,-z,max-page-size=16384 -fuse-ld=lld
-android.ndk_api = 21
+android.ndk_api = 24

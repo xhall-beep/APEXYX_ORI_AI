@@ -15,13 +15,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0" "setuptools"
-      - name: Swift Auto-Forge
+      - name: Sovereign Clean Forge
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          rm -rf .buildozer
-          # Standard build to ensure we get an installable artifact
+          # CRITICAL: Wipe old corrupted platform builds
+          rm -rf .buildozer/android/platform/build-arm64-v8a
           buildozer -v android debug
       - name: 📦 Deposit Apexyx APK
         uses: actions/upload-artifact@v4
