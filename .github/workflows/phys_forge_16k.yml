@@ -10,33 +10,21 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Sovereign Toolchain
+      - name: Install Build Tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
+          sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0" "setuptools"
-      - name: Binary Sovereign Forge
+      - name: Swift Auto-Forge
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
-          # FORCING the 16KB alignment flags into the environment
-          LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
-          APP_ANDROID_ARCHS: "arm64-v8a"
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          unset ANDROID_NDK_HOME ANDROID_SDK_HOME ANDROIDNDK ANDROIDSDK
           rm -rf .buildozer
-          
-          # SOVEREIGN HOOK: Manually patching the NDK's linker to force 16KB
-          # This ensures that even if a recipe ignores LDFLAGS, it CANNOT ignore the linker.
-          mkdir -p $HOME/bin
-          echo -e '#!/bin/bash\nld.lld -z max-page-size=16384 "$@"' > $HOME/bin/ld.lld
-          chmod +x $HOME/bin/ld.lld
-          export PATH=$HOME/bin:$PATH
-          
-          # Execute with Recipe Lockdown
+          # Standard build to ensure we get an installable artifact
           buildozer -v android debug
-      - name: 📦 Deposit Sovereign APK
+      - name: 📦 Deposit Apexyx APK
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx-16K-Sovereign
+          name: Apexyx-Sovereign-App
           path: bin/*.apk
