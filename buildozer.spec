@@ -1,18 +1,16 @@
 [app]
-title = REECH
-package.name = reech.vessel
+title = REECH Shell
+package.name = reechshell
 package.domain = org.reech
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas
-version = 1.0.0
-requirements = python3,kivy==2.3.0,requests,certifi
-orientation = portrait
-osx.python_version = 3
-osx.kivy_version = 2.3.0
-fullscreen = 1
-android.archs = arm64-v8a
-android.allow_backup = True
+source.include_exts = py
+version = 0.1.0
+requirements = python3
+android.bootstrap = webview
+
+# CRITICAL: Direct API specification (bypasses workflow defaults)
 android.api = 34
-android.minapi = 21
+android.minapi = 24
 android.ndk = 25b
-p4a.branch = master
+
+android.permissions = INTERNET,ACCESS_NETWORK_STATE

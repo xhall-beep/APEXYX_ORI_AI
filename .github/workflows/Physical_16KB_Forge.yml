@@ -1,0 +1,3 @@
+export ANDROIDAPI=34
+export ANDROIDMINAPI=24
+export ANDROIDNDK=25b
