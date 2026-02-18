@@ -15,22 +15,25 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3-pip zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev lld llvm
           python3 -m pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0" "setuptools"
-      - name: Core-Breaker Forge
+      - name: Binary Sovereign Forge
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_DIR: 1
-          # Applying 16KB ONLY to the Android Target LDFLAGS
-          ANDROID_LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
-          # Bypassing the Freetype/Harfbuzz trap
-          P4A_freetype_extra_args: "--with-harfbuzz=no --with-png=no --with-zlib=yes"
-          # FORCING the 16KB flag into the actual python-for-android toolchain
-          EXTRA_P4A_ARGS: "--force-batch --use-llvm-linker"
+          # FORCING the 16KB alignment flags into the environment
+          LDFLAGS: "-Wl,-z,max-page-size=16384 -fuse-ld=lld"
+          APP_ANDROID_ARCHS: "arm64-v8a"
         run: |
           export PATH=$PATH:$HOME/.local/bin
           unset ANDROID_NDK_HOME ANDROID_SDK_HOME ANDROIDNDK ANDROIDSDK
           rm -rf .buildozer
           
-          # Injecting flags into the environment that p4a specifically reads
-          export LDFLAGS="$ANDROID_LDFLAGS"
+          # SOVEREIGN HOOK: Manually patching the NDK's linker to force 16KB
+          # This ensures that even if a recipe ignores LDFLAGS, it CANNOT ignore the linker.
+          mkdir -p $HOME/bin
+          echo -e '#!/bin/bash\nld.lld -z max-page-size=16384 "$@"' > $HOME/bin/ld.lld
+          chmod +x $HOME/bin/ld.lld
+          export PATH=$HOME/bin:$PATH
+          
+          # Execute with Recipe Lockdown
           buildozer -v android debug
       - name: 📦 Deposit Sovereign APK
         uses: actions/upload-artifact@v4
