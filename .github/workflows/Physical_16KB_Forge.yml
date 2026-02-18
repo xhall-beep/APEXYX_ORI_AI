@@ -25,6 +25,8 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
+      - name: Patch Distutils
+        run: pip install setuptools
           pip install buildozer
           buildozer android update
       
