@@ -15,8 +15,9 @@ def create_webview():
     html = """
     <!DOCTYPE html>
     <html>
-    <body>
+    <body style="margin:0;padding:0;">
         <script>
+            // CRITICAL: Direct connection to your Termux server
             window.location = 'http://10.0.0.203:58081/reech-core';
         </script>
     </body>
@@ -26,4 +27,6 @@ def create_webview():
     webview.loadData(html, "text/html", "utf-8")
     activity.setContentView(webview)
 
-create_webview()
+create_webview()EOF
+eof
+eof
