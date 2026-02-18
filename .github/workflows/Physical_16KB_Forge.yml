@@ -2,17 +2,18 @@ name: Physical_16KB_Forge
 on: [workflow_dispatch]
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/kivy/buildozer:master
     steps:
       - uses: actions/checkout@v4
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        with:
-          workdir: .
-          buildozer_version: master
-        env:
-          LDFLAGS: "-Wl,-z,common-page-size=16384 -Wl,-z,max-page-size=16384"
-      - name: Upload Artifact
+      - name: Reech Forge Alignment
+        run: |
+          export LDFLAGS="-Wl,-z,common-page-size=16384 -Wl,-z,max-page-size=16384"
+          # Automated bypass of all interactive prompts
+          mkdir -p ~/.buildozer && echo "[DEBUG]\nlog_level = 2" > ~/.buildozer/config
+          yes | buildozer android debug
+      - name: Deliver Artifact
         uses: actions/upload-artifact@v4
         with:
           name: REECH_Shell
