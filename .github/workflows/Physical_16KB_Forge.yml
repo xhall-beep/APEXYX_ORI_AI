@@ -4,7 +4,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/kivy/buildozer:master
+      image: ghcr.io/kivy/buildozer:latest
     steps:
       - uses: actions/checkout@v4
       - name: Reech Forge Alignment
