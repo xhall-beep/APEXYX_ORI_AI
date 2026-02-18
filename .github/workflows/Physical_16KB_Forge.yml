@@ -10,6 +10,8 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install dependencies
+      - name: Accept Android Licenses
+        run: yes | sdkmanager --licenses
         run: |
           pip install --upgrade pip
           pip install setuptools Cython==0.29.33 buildozer
