@@ -1,51 +1,21 @@
 name: Physical_16KB_Forge
-
-on:
-  push:
-    branches: [ sovereign-alignment ]
-  workflow_dispatch:
-
+on: [workflow_dispatch]
 jobs:
   build:
-    runs-on: ubuntu-latest
-    env:  # CORRECT INDENTATION (same level as runs-on)
-      ANDROIDAPI: 34
-      ANDROIDMINAPI: 24
-      ANDROIDNDK: 25b
-      P4A_BOOTSTRAP: webview
-    
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-      
+          python-version: '3.11'
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-      - name: Patch Distutils
-        run: pip install setuptools
-          pip install buildozer
-          buildozer android update
-      
-      - name: Build APK
-        run: |
-          # CRITICAL: Force correct API levels (with flexible spacing)
-          sed -i 's/^android\.api\s*=\s*.*/android.api = 34/' buildozer.spec
-          sed -i 's/^android\.minapi\s*=\s*.*/android.minapi = 24/' buildozer.spec
-          sed -i 's/^android\.ndk\s*=\s*.*/android.ndk = 25b/' buildozer.spec
-          sed -i 's/^p4a\.bootstrap\s*=\s*.*/p4a.bootstrap = webview/' buildozer.spec
-          
-          # Verify the changes
-          echo "=== BUILD CONFIGURATION ==="
-          grep -E "api|ndk|bootstrap" buildozer.spec
-          
-          # Build with debug logging
-          buildozer -v android debug
-      
-      - name: Upload APK
+          pip install setuptools Cython==0.29.33 buildozer
+      - name: Build with Buildozer
+        run: buildozer android debug
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: REECH_Shell
