@@ -6,7 +6,6 @@ from jnius import autoclass
 def create_webview():
     WebView = autoclass('android.webkit.WebView')
     WebViewClient = autoclass('android.webkit.WebViewClient')
-    activity = autoclass('org.kivy.android.PythonActivity').mActivity
     
     webview = WebView(activity)
     webview.getSettings().setJavaScriptEnabled(True)
