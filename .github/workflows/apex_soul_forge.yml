@@ -3,20 +3,21 @@ name: Apexyx Soul Forge
 on:
   push:
     branches: [ sovereign-alignment ]
-  workflow_dispatch:  # CRITICAL: This enables manual triggering
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # CRITICAL: DIRECT API ENFORCEMENT (overrides all defaults)
+      # CRITICAL: DIRECT API ENFORCEMENT
       ANDROIDAPI: 34
       ANDROIDMINAPI: 24
       ANDROIDNDK: 25b
       P4A_BOOTSTRAP: webview
     
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
       
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -26,18 +27,18 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install buildozer
+          pip install buildozer==1.4.0
           buildozer android update
       
       - name: Build APK
         run: |
-          # CRITICAL: Force correct API levels (with flexible spacing)
-          sed -i 's/^android\.api\s*=\s*.*/android.api = 34/' buildozer.spec
-          sed -i 's/^android\.minapi\s*=\s*.*/android.minapi = 24/' buildozer.spec
-          sed -i 's/^android\.ndk\s*=\s*.*/android.ndk = 25b/' buildozer.spec
-          sed -i 's/^p4a\.bootstrap\s*=\s*.*/p4a.bootstrap = webview/' buildozer.spec
+          # CRITICAL: Force correct API levels
+          sed -i 's/^android.api = .*/android.api = 34/' buildozer.spec
+          sed -i 's/^android.minapi = .*/android.minapi = 24/' buildozer.spec
+          sed -i 's/^android.ndk = .*/android.ndk = 25b/' buildozer.spec
+          sed -i 's/^p4a.bootstrap = .*/p4a.bootstrap = webview/' buildozer.spec
           
-          # Verify the changes
+          # Verify configuration
           echo "=== BUILD CONFIGURATION ==="
           grep -E "api|ndk|bootstrap" buildozer.spec
           
