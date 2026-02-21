@@ -1,57 +1,33 @@
 name: Apexyx Soul Forge
-
 on:
+  workflow_dispatch:
   push:
     branches: [ sovereign-alignment ]
-  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      # CRITICAL: DIRECT API ENFORCEMENT
-      ANDROIDAPI: 34
-      ANDROIDMINAPI: 24
-      ANDROIDNDK: 25b
-      P4A_BOOTSTRAP: webview
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
+      - uses: actions/checkout@v4
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-      
-      - name: Install dependencies
+          python-version: '3.11'
+
+      - name: Install Dependencies
         run: |
-          pip install --upgrade buildozer "setuptools<70.0.0" wheel
-          pip install --upgrade buildozer "setuptools<70.0.0" wheel
-          python3 -m python3 -m pip install --upgrade "setuptools<70.0.0" wheel
-      
+          pip install --upgrade pip
+          pip install --upgrade buildozer "setuptools<70.0.0" wheel Cython
+
       - name: Build APK
         run: |
-          # CRITICAL: Force correct API levels
-          sed -i 's/^android.api = .*/android.api = 34/' buildozer.spec
-          sed -i 's/^android.minapi = .*/android.minapi = 24/' buildozer.spec
-          sed -i 's/^android.ndk = .*/android.ndk = 25b/' buildozer.spec
-          sed -i 's/^p4a.bootstrap = .*/p4a.bootstrap = webview/' buildozer.spec
-          
-          # Verify configuration
-          echo "=== BUILD CONFIGURATION ==="
-          grep -E "api|ndk|bootstrap" buildozer.spec
-          
-          # Build with debug logging
-          buildozer -v android debug
-      
+          yes | python3 -m buildozer android debug
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: REECH_Shell
+          name: Apexyx-Sovereign-Build
           path: bin/*.apk
-# Sovereign Sync: Fri Feb 20 20:45:36 CST 2026
-# Forge Alignment: Fri Feb 20 20:50:26 CST 2026
-# Forge Environmental Lock: Fri Feb 20 20:55:58 CST 2026
-# Atomic Reset: Fri Feb 20 20:58:10 CST 2026
-# Atomic Reset: Fri Feb 20 21:00:23 CST 2026
