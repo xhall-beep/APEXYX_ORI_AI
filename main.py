@@ -1,30 +1,21 @@
-import android
 from android.runnable import run_on_ui_thread
 from jnius import autoclass
 
+# Sovereign Bridge: Pointing to your live Termux Server
+TARGET_URL = "http://127.0.0.1:58080"
+
+PythonActivity = autoclass('org.kivy.android.PythonActivity')
+WebView = autoclass('android.webkit.WebView')
+WebViewClient = autoclass('android.webkit.WebViewClient')
+
 @run_on_ui_thread
 def create_webview():
-    WebView = autoclass('android.webkit.WebView')
-    WebViewClient = autoclass('android.webkit.WebViewClient')
-    activity = autoclass('org.kivy.android.PythonActivity').mActivity
-    
+    activity = PythonActivity.mActivity
     webview = WebView(activity)
     webview.getSettings().setJavaScriptEnabled(True)
     webview.setWebViewClient(WebViewClient())
-    
-    html = """
-    <!DOCTYPE html>
-    <html>
-    <body style="margin:0;padding:0;">
-        <script>
-            // CRITICAL: Direct connection to your Termux server
-            window.location = 'http://10.0.0.203:58081/reech-core';
-        </script>
-    </body>
-    </html>
-    """
-    
-    webview.loadData(html, "text/html", "utf-8")
     activity.setContentView(webview)
+    webview.loadUrl(TARGET_URL)
 
-create_webview()
+if __name__ == "__main__":
+    create_webview()
