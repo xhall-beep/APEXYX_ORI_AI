@@ -26,9 +26,9 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
           pip install --upgrade buildozer "setuptools<70.0.0" wheel
-          buildozer android update
+          pip install --upgrade buildozer "setuptools<70.0.0" wheel
+          python3 -m buildozer android update
       
       - name: Build APK
         run: |
@@ -52,3 +52,4 @@ jobs:
           path: bin/*.apk
 # Sovereign Sync: Fri Feb 20 20:45:36 CST 2026
 # Forge Alignment: Fri Feb 20 20:50:26 CST 2026
+# Forge Environmental Lock: Fri Feb 20 20:55:58 CST 2026
