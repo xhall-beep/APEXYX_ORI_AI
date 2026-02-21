@@ -9,44 +9,17 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip
-
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Install Python Dependencies
-        run: |
-          pip install --upgrade pip
-          pip install --upgrade buildozer "setuptools<70.0.0" wheel Cython
-
-      - name: Hardwire Android Environment
-        run: |
-          mkdir -p -m 777 ~/.android
-          # Manually fetch stable cmdline-tools to force license acceptance
-          mkdir -p $HOME/android_sdk/cmdline-tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
-          unzip tools.zip -d $HOME/android_sdk/cmdline-tools
-          mv $HOME/android_sdk/cmdline-tools/cmdline-tools $HOME/android_sdk/cmdline-tools/latest
-          
-          # Set Paths for this step
-          export ANDROID_HOME=$HOME/android_sdk
-          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
-          
-          # Force accept all licenses and pre-install build-tools for aidl
-          yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "build-tools;34.0.0" "platforms;android-34"
-          
-          # Anchor for Buildozer
-          echo "android.sdk_path = $HOME/android_sdk" >> buildozer.spec
-
       - name: Build APK
         run: |
-          export ANDROID_HOME=$HOME/android_sdk
-          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
-          python3 -m buildozer -v android debug
+          pip install --upgrade pip buildozer "setuptools<70.0.0" wheel Cython
+          yes | python3 -m buildozer -v android debug
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
