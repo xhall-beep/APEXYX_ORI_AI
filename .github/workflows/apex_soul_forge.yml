@@ -10,19 +10,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: System Hardening
+      - name: Full-Spectrum Hardening
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config libstdc++6 cmake
-          # Extra dependencies for image/audio/compilation
-          sudo apt-get install -y libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config libstdc++6 cmake libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good
+          # Crucial: Install the missing 32-bit architecture support for NDK
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1
 
-      - name: Build APK (Sovereign Heavy Duty)
+      - name: Build APK (Sovereign Full-Spectrum)
         run: |
           pip install --upgrade pip buildozer "setuptools<70.0.0" wheel Cython
-          # Force Buildozer to clear any lingering internal cache in the runner
+          # Clean the internal pipe one last time
           python3 -m buildozer android clean
-          # Execute the build with the license hammer
+          # Execute with the license hammer
           yes | python3 -m buildozer -v android debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
