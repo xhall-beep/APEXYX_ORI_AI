@@ -13,12 +13,16 @@ jobs:
       - name: System Hardening
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config libstdc++6
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config libstdc++6 cmake
+          # Extra dependencies for image/audio/compilation
+          sudo apt-get install -y libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good
 
-      - name: Build APK (Zero-Path Force)
+      - name: Build APK (Sovereign Heavy Duty)
         run: |
           pip install --upgrade pip buildozer "setuptools<70.0.0" wheel Cython
-          # Force buildozer to fresh-install everything it needs
+          # Force Buildozer to clear any lingering internal cache in the runner
+          python3 -m buildozer android clean
+          # Execute the build with the license hammer
           yes | python3 -m buildozer -v android debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
