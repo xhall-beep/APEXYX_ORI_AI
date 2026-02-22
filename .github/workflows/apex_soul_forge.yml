@@ -10,15 +10,50 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Hardening
+      - name: Sovereign Hardening & Recovery Logic
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config libstdc++6 cmake
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config libstdc++6 cmake libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1 freeglut3-dev libsdl2-dev
 
-      - name: Build
+      - name: Recursive Autonomic Build
         run: |
           pip install --upgrade pip buildozer "setuptools<70.0.0" wheel Cython
-          if [ ! -f buildozer.spec ]; then buildozer init; fi
-          yes | buildozer -v android debug
+          
+          # Strategy 1: Standard Optimized Build
+          run_build_v1() {
+            echo "::group::Attempting Strategy 1: Standard Optimized"
+            if [ ! -f buildozer.spec ]; then buildozer init; fi
+            yes | buildozer -v android debug && return 0
+            echo "Strategy 1 failed. Pivoting..."
+            ::endgroup::
+            return 1
+          }
+
+          # Strategy 2: Deep-Dependency Injection & Cache Wipe
+          run_build_v2() {
+            echo "::group::Attempting Strategy 2: Deep-Dependency Pivot"
+            buildozer clobber
+            sudo apt-get install -y libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
+            yes | buildozer -v android debug && return 0
+            echo "Strategy 2 failed. Initiating Final Override..."
+            ::endgroup::
+            return 1
+          }
+
+          # Strategy 3: Architecture-Fallback Mode
+          run_build_v3() {
+            echo "::group::Attempting Strategy 3: Architecture-Fallback"
+            sed -i 's/android.arch = .*/android.arch = armeabi-v7a/' buildozer.spec
+            yes | buildozer -v android debug && return 0
+            ::endgroup::
+            return 1
+          }
+
+          # Execution Loop
+          run_build_v1 || run_build_v2 || run_build_v3 || (echo "All autonomous paths exhausted. Re-evaluating core logic." && exit 1)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FORCED_EPOCH: $(date +%s)
