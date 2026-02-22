@@ -10,18 +10,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Full-Spectrum Hardening
+      - name: Hardening
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config libstdc++6 cmake libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good
-          sudo dpkg --add-architecture i386
-          sudo apt-get update
-          sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config libstdc++6 cmake
 
-      - name: Build APK (Force Direct)
+      - name: Build
         run: |
-          pip install --upgrade pip
-          pip install buildozer "setuptools<70.0.0" wheel Cython
+          pip install --upgrade pip buildozer "setuptools<70.0.0" wheel Cython
           if [ ! -f buildozer.spec ]; then buildozer init; fi
           yes | buildozer -v android debug
         env:
