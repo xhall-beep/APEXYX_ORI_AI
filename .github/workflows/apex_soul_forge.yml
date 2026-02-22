@@ -15,13 +15,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config libstdc++6
 
-      - name: Build APK (Sovereign Force)
+      - name: Build APK (Zero-Path Force)
         run: |
           pip install --upgrade pip buildozer "setuptools<70.0.0" wheel Cython
-          # Reset the spec to let Buildozer manage the SDK paths automatically
-          sed -i "s|android.sdk_path =.*|#android.sdk_path =|" buildozer.spec
-          sed -i "s|android.skip_update =.*|android.skip_update = False|" buildozer.spec
-          # Force accept all licenses so it can download aidl itself
+          # Force buildozer to fresh-install everything it needs
           yes | python3 -m buildozer -v android debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
