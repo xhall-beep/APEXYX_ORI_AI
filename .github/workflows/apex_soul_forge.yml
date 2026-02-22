@@ -15,26 +15,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config libstdc++6
 
-      - name: Internal Build-Tools Injection
-        run: |
-          # Create the exact internal path Buildozer searches
-          mkdir -p $HOME/.buildozer/android/platform/android-sdk/build-tools/34.0.0
-          
-          # Force-inject tools into the internal tree
-          wget -q https://dl.google.com/android/repository/build-tools_r34-linux.zip
-          unzip -q build-tools_r34-linux.zip -d $HOME/temp_tools
-          cp -r $HOME/temp_tools/android-14/* $HOME/.buildozer/android/platform/android-sdk/build-tools/34.0.0/
-          
-          # Ensure aidl is executable within the Buildozer tree
-          chmod +x $HOME/.buildozer/android/platform/android-sdk/build-tools/34.0.0/aidl
-          
-          echo "ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk" >> $GITHUB_ENV
-
       - name: Build APK (Sovereign Force)
         run: |
           pip install --upgrade pip buildozer "setuptools<70.0.0" wheel Cython
-          # Skip updates to prevent Buildozer from wiping our manual injection
-          sed -i "s|# android.skip_update = False|android.skip_update = True|" buildozer.spec
+          # Reset the spec to let Buildozer manage the SDK paths automatically
+          sed -i "s|android.sdk_path =.*|#android.sdk_path =|" buildozer.spec
+          sed -i "s|android.skip_update =.*|android.skip_update = False|" buildozer.spec
+          # Force accept all licenses so it can download aidl itself
           yes | python3 -m buildozer -v android debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
