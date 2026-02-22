@@ -15,17 +15,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config
 
-      - name: Build APK (Aggressive Pathing)
+      - name: Manual SDK & Aidl Injection
+        run: |
+          # Manually install build-tools to ensure aidl is present
+          mkdir -p $HOME/android_sdk/build-tools/34.0.0
+          wget https://dl.google.com/android/repository/build-tools_r34-linux.zip
+          unzip -q build-tools_r34-linux.zip -d $HOME/android_sdk/
+          mv $HOME/android_sdk/android-14/* $HOME/android_sdk/build-tools/34.0.0/
+          
+          # Force export to environment
+          echo "ANDROID_HOME=$HOME/android_sdk" >> $GITHUB_ENV
+          echo "$HOME/android_sdk/build-tools/34.0.0" >> $GITHUB_PATH
+          echo "$HOME/android_sdk/platform-tools" >> $GITHUB_PATH
+
+      - name: Build APK (Sovereign Force)
         run: |
           pip install --upgrade pip buildozer "setuptools<70.0.0" wheel Cython
-          # Force SDK installation and path alignment in one sweep
-          yes | python3 -m buildozer -v android debug || true
-          
-          # Recovery: Manual path injection if Aidl is still missing
-          export ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk
-          export PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/34.0.0
-          
-          # Final Hammer
+          # Point buildozer spec to our manual SDK
+          sed -i "s|#android.sdk_path =.*|android.sdk_path = $HOME/android_sdk|" buildozer.spec
           yes | python3 -m buildozer -v android debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
