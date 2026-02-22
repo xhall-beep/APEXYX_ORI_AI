@@ -22,9 +22,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install buildozer "setuptools<70.0.0" wheel Cython
-          # Verify spec exists to avoid instant exit code 1
           if [ ! -f buildozer.spec ]; then buildozer init; fi
-          # Zero-cache forced build
           yes | buildozer -v android debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
