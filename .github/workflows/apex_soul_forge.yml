@@ -6,36 +6,42 @@ on:
 
 jobs:
   forge:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
-      - name: Hardened Environment (v10)
+      - name: System Hardening (v11)
         run: |
-          sudo apt-get update || true
-          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6 || true
-          pip install --upgrade pip
+          sudo apt-get update
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6
           pip install "Cython<3.0" wheel "setuptools<70.0.0" buildozer
 
-      - name: Path Alignment & License Fix
+      - name: Atomic Spec Injection
         run: |
-          if [ ! -f buildozer.spec ]; then buildozer init; fi
-          # Force the license agreement
-          sed -i 's/# android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
-          sed -i 's/android.arch = .*/android.arch = armeabi-v7a/' buildozer.spec
+          # Kill any existing spec to ensure zero corruption
+          rm -f buildozer.spec
+          buildozer init
           
-          # Fix the aidl path error (Common Buildozer bug on Ubuntu 22.04+)
-          sudo ln -sf /usr/bin/aidl /usr/local/bin/aidl
+          # Injecting Sovereign optimized parameters
+          sed -i 's/^package.name = .*/package.name = apexyx_soul/' buildozer.spec
+          sed -i 's/^package.domain = .*/package.domain = org.montgomery/' buildozer.spec
+          sed -i 's/^requirements = .*/requirements = python3,kivy==2.3.0,requests,urllib3,certifi/' buildozer.spec
+          sed -i 's/^# android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
+          sed -i 's/^# android.api = .*/android.api = 33/' buildozer.spec
+          sed -i 's/^# android.ndk = .*/android.ndk = 25b/' buildozer.spec
+          sed -i 's/^android.arch = .*/android.arch = armeabi-v7a/' buildozer.spec
           
-          # Create license dir BEFORE buildozer attempts to download
+          # Absolute License Override
           mkdir -p $HOME/.buildozer/android/platform/android-sdk/licenses
           echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55\nd56263074850734107e3226a27521746f3945412\n24333f8a63b682569cd48292700318359048a946" > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
+          
+          # Link aidl for Ubuntu 22.04
+          sudo ln -sf /usr/bin/aidl /usr/local/bin/aidl
 
-      - name: Recursive Autonomic Build
+      - name: Final Sovereign Strike
         run: |
           export PATH=$PATH:~/.local/bin/
-          # We use "debug" first to trigger the downloads, then auto-retry on failure
-          yes | buildozer -v android debug || (echo "STRIKE 1 FAILED. CLEANING AND RE-TRYING PATHS..." && buildozer clobber && yes | buildozer -v android debug)
+          # Execute with high verbosity. If fail, dump the internal build log directly.
+          buildozer -v android debug || (find .buildozer -name "build.log" -exec tail -n 200 {} + && exit 1)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
