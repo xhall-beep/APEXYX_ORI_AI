@@ -12,7 +12,6 @@ jobs:
 
       - name: Sovereign Core Setup
         run: |
-          # Robust update with retries to bypass Exit Code 100
           for i in {1..3}; do sudo apt-get update && break || sleep 15; done
           sudo apt-get install -y --no-install-recommends \
             build-essential libffi-dev libssl-dev python3-dev zip unzip \
@@ -32,7 +31,6 @@ jobs:
           source.include_exts = py,png,jpg,kv,atlas,js,so,dex,conf,sh,txt
           version = 0.1
           requirements = python3,kivy==2.3.0,requests,certifi
-          orientation = portrait
           android.api = 33
           android.minapi = 21
           android.ndk = 25b
@@ -43,25 +41,27 @@ jobs:
           log_level = 2
           EOT
 
-      - name: Sovereign Artifact Strike
+      - name: Sovereign Forge & Search
         run: |
           export PATH=$PATH:/home/runner/.local/bin
-          mkdir -p ~/.android && touch ~/.android/repositories.cfg
-          # Pipe everything to full_forge.log even if it fails immediately
-          {
-            yes | buildozer android debug
-          } 2>&1 | tee full_forge.log
+          yes | buildozer android debug
+          
+          # SEARCH AND RESCUE: Find the APK wherever it moved to
+          echo "Scanning for forged APKs..."
+          mkdir -p final_payload
+          find . -name "*.apk" -exec cp {} final_payload/ \;
+          ls -R final_payload/
+
+      - name: Upload Sovereign APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Apexyx-Sovereign-APK
+          path: final_payload/
+          if-no-files-found: error
 
       - name: Upload Logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Forge-Debug-Logs
-          path: full_forge.log
-
-      - name: Upload Sovereign APK
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Apexyx-Sovereign-APK
-          path: bin/*.apk
+          path: .buildozer/android/platform/build-*/build/dists/*/bin/*.log
