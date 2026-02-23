@@ -10,34 +10,37 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Autonomic Environment Hardening
+      - name: Mirror-Shield & Hardening
         run: |
-          sudo apt-get update
+          # Bypassing Exit Code 100 by purging corrupted repo lists
+          sudo rm -rf /var/lib/apt/lists/*
+          sudo apt-get clean
+          # Removing Microsoft repos that often cause synchronization locks in GHA
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list || true
+          
+          # Forced Update with retry logic
+          sudo apt-get update --fix-missing || (sleep 5 && sudo apt-get update)
           sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake libgstreamer1.0-dev aidl libstdc++6
-          # Version Anchor for Stability
+          
+          # Version Anchor
           pip install --upgrade pip
           pip install "Cython<3.0" wheel "setuptools<70.0.0" buildozer
 
       - name: Sovereign NDK Pre-Flight
         run: |
-          # Force create buildozer spec if missing and inject critical bypasses
           if [ ! -f buildozer.spec ]; then buildozer init; fi
           sed -i 's/# android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
           sed -i 's/android.arch = .*/android.arch = armeabi-v7a/' buildozer.spec
-          # Injecting the missing aidl link (Common Buildozer Bug)
           sudo ln -sf /usr/bin/aidl /usr/local/bin/aidl
 
       - name: Recursive Autonomic Build
         run: |
           export PATH=$PATH:~/.local/bin/
-          
           build_logic() {
             echo "::group::Executing Sovereign Strategy"
-            # Attempt build with auto-license acceptance
             yes | buildozer -v android debug || return 1
           }
-
-          # The Loop: Attempt -> Self-Heal (Clobber) -> Final Retry
-          build_logic || (echo "Strategy 1 Failed. Initiating Clobber & Deep Re-build..." && buildozer clobber && build_logic)
+          # Autonomic Retry: Attempt -> Clobber -> Final Strike
+          build_logic || (echo "Strategy 1 Failed. Clobbering..." && buildozer clobber && build_logic)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
