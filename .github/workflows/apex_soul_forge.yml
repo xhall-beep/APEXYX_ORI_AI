@@ -13,11 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sovereign Permission Lock
+      - name: Align Container Environment
         run: |
           chown -R root:root .
-          chmod -R 777 .
-
+          # Force link the container's internal SDK/NDK paths to the buildozer home
+          mkdir -p /root/.buildozer/android/platform
+          ln -s /home/buildozer/.buildozer/android/platform/android-sdk /root/.buildozer/android/platform/android-sdk || true
+          
       - name: Atomic Spec Injection
         run: |
           cat << 'EOT' > buildozer.spec
@@ -40,9 +42,10 @@ jobs:
           log_level = 2
           EOT
 
-      - name: Sovereign Machine-Code Strike
+      - name: Sovereign Path-Master Strike
         run: |
-          # Bypassing the container's shell restrictions directly
+          # Use 'buildozer android debug' with explicit HOME redirection
+          export HOME=/root
           buildozer --allow-root android debug
 
       - name: Upload Sovereign APK
