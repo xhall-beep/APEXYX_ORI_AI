@@ -6,19 +6,17 @@ on:
 
 jobs:
   forge:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: kivy/buildozer:latest
+      options: --user root
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sovereign Core Setup
+      - name: Sovereign Permission Lock
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget zlib1g-dev autoconf libtool pkg-config cmake libstdc++6
-          python3 -m pip install --user --upgrade "buildozer==1.5.0" "Cython<3.0"
-          echo "/home/runner/.local/bin" >> $GITHUB_PATH
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+          chown -R root:root .
+          chmod -R 777 .
 
       - name: Atomic Spec Injection
         run: |
@@ -42,11 +40,10 @@ jobs:
           log_level = 2
           EOT
 
-      - name: Sovereign Strike
+      - name: Sovereign Machine-Code Strike
         run: |
-          export PATH=$PATH:/home/runner/.local/bin
-          # Let buildozer handle the NDK now that the SDK path is stabilized
-          buildozer android debug
+          # Bypassing the container's shell restrictions directly
+          buildozer --allow-root android debug
 
       - name: Upload Sovereign APK
         if: success()
