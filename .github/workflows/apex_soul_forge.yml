@@ -7,19 +7,13 @@ on:
 jobs:
   forge:
     runs-on: ubuntu-22.04
-    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
       - name: Sovereign Core Setup
         run: |
-          for i in {1..3}; do sudo apt-get update && break || sleep 15; done
-          sudo apt-get install -y --no-install-recommends \
-            build-essential libffi-dev libssl-dev python3-dev zip unzip \
-            openjdk-17-jdk wget zlib1g-dev autoconf libtool pkg-config \
-            cmake libstdc++6 libncurses5 lld
-          python3 -m pip install --user --upgrade pip
-          # Locking to highly compatible versions for Kivy 2.3.0
+          sudo apt-get update
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget zlib1g-dev autoconf libtool pkg-config cmake libstdc++6
           python3 -m pip install --user --upgrade "buildozer==1.5.0" "Cython==0.29.33"
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
@@ -36,28 +30,25 @@ jobs:
           requirements = python3,kivy==2.3.0,requests,certifi
           android.api = 33
           android.minapi = 21
-          # Switching to NDK 25c for peak compatibility with API 33
-          android.ndk = 25c
+          android.ndk = 25b
           android.arch = armeabi-v7a
           android.accept_sdk_license = True
           p4a.branch = master
           [buildozer]
           log_level = 2
-          warn_on_root = 1
           EOT
 
       - name: Sovereign Forge Strike
         run: |
           export PATH=$PATH:/home/runner/.local/bin
-          # Ensure a fresh workspace for the final link
-          buildozer android clean
+          # DIRECT BUILD: No clean, no pipe, just raw output
           yes | buildozer android debug
 
       - name: Upload Sovereign Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Sovereign-Full-Trace
+          name: Sovereign-Payload
           path: |
             bin/*.apk
             .buildozer/android/platform/build-*/build/dists/*/bin/*.apk
