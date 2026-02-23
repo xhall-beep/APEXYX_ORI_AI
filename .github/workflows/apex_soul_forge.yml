@@ -16,35 +16,53 @@ jobs:
           sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6
           pip install "Cython<3.0" wheel "setuptools<70.0.0" buildozer
 
-      - name: Path Master & Asset Alignment
+      - name: Sovereign Spec Injection
         run: |
-          rm -f buildozer.spec
-          buildozer init
-          # Include all your assets: py, js, dex, so, conf, and binaries
-          sed -i 's/^source.include_exts = .*/source.include_exts = py,png,jpg,kv,atlas,js,so,dex,conf,bin/' buildozer.spec
-          # Explicitly include the mobile-deploy and src folders
-          sed -i 's/^# source.include_patterns = .*/source.include_patterns = mobile-deploy\/*,src\/*/' buildozer.spec
-          # Core requirements for your handlers
-          sed -i 's/^requirements = .*/requirements = python3,kivy==2.3.0,requests,urllib3,certifi,chardet,idna/' buildozer.spec
-          
-          sed -i 's/^# android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
-          sed -i 's/^# android.api = .*/android.api = 33/' buildozer.spec
-          sed -i 's/^android.arch = .*/android.arch = armeabi-v7a/' buildozer.spec
-          
+          cat << 'EOT' > buildozer.spec
+          [app]
+          title = Apexyx Soul
+          package.name = apexyx_soul
+          package.domain = org.montgomery
+          source.dir = .
+          source.include_exts = py,png,jpg,kv,atlas,js,so,dex,conf,bin,sh
+          source.include_patterns = mobile-deploy/*,src/*,src/handlers/*
+          version = 0.1
+          requirements = python3,kivy==2.3.0,requests,urllib3,certifi,chardet,idna
+          orientation = portrait
+          osx.python_version = 3
+          osx.kivy_version = 1.9.1
+          fullscreen = 0
+          android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
+          android.api = 33
+          android.minapi = 21
+          android.ndk = 25b
+          android.arch = armeabi-v7a
+          android.accept_sdk_license = True
+          android.skip_update = False
+          android.copy_libs = 1
+          p4a.branch = master
+          [buildozer]
+          log_level = 2
+          warn_on_root = 1
+          EOT
+
+          # Fix aidl path for the runner
           sudo ln -sf /usr/bin/aidl /usr/local/bin/aidl
+          
+          # Inject License Hashes directly into the predicted SDK path
           mkdir -p $HOME/.buildozer/android/platform/android-sdk/licenses
-          echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55\nd56263074850734107e3226a27521746f3945412\n24333f8a63b682569cd48292700318359048a946" > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          echo -e "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56263074850734107e3226a27521746f3945412\n24333f8a63b682569cd48292700318359048a946" > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
 
       - name: Final Sovereign Strike
         run: |
           export PATH=$PATH:~/.local/bin/
-          # Increased verbosity to monitor the asset packaging
-          yes | buildozer -v android debug || (find .buildozer -name "build.log" -exec tail -n 300 {} + && exit 1)
+          # No pipe, no redirect, just pure verbose execution to see the exact crash line
+          buildozer -v android debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Sovereign APK
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx-Sovereign-Internal
+          name: Apexyx-Sovereign-APK
           path: bin/*.apk
