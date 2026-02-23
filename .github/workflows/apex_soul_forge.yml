@@ -7,6 +7,8 @@ on:
 jobs:
   forge:
     runs-on: ubuntu-latest
+    container:
+      image: kivy/buildozer:latest
     steps:
       - uses: actions/checkout@v4
 
@@ -32,15 +34,13 @@ jobs:
           log_level = 2
           EOT
 
-      - name: Sovereign Container Strike
-        uses: ArtemSerebriakov/buildozer-action@v1
-        with:
-          buildozer_version: stable
-          python_version: 3.11
-          command: buildozer android debug
-          repository_path: .
-
+      - name: Sovereign Industrial Strike
+        run: |
+          # The Kivy image has everything pre-installed. Just build.
+          buildozer android debug
+        
       - name: Upload Sovereign APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: Apexyx-Sovereign-APK
