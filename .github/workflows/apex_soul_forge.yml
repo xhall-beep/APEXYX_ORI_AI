@@ -10,21 +10,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sovereign V-Env Strike
+      - name: Titan Alignment Strike
         run: |
-          # A. System Dependencies
+          # A. System Level + Explicit Java Alignment
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6 python3-venv
           
-          # B. Virtual Environment Creation (The Clean Room)
+          # B. Set Sovereign Java Environment
+          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+          export PATH=$JAVA_HOME/bin:$PATH
+          
+          # C. Virtual Clean-Room
           python3 -m venv venv
           source venv/bin/activate
           
-          # C. Tooling inside V-Env
+          # D. Tooling
           pip install --upgrade pip
           pip install "Cython<3.0" wheel "setuptools<70.0.0" buildozer==1.5.0
           
-          # D. SDK Setup
+          # E. SDK Deep-Injection
           export ANDROID_HOME=$HOME/android-sdk
           mkdir -p $ANDROID_HOME/cmdline-tools
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
@@ -32,11 +36,10 @@ jobs:
           mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
           export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
           
-          # E. Licenses
+          # F. Force Licenses
           yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
-          sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.0"
-
-          # F. Spec Injection
+          
+          # G. Buildozer Auto-Inject
           cat << 'EOT' > buildozer.spec
           [app]
           title = Apexyx Soul
@@ -58,8 +61,9 @@ jobs:
           log_level = 2
           EOT
 
-          # G. The Strike (Inside V-Env)
-          buildozer android debug
+          # H. The Titan Strike
+          # Using --verbose to catch the exact line of failure if it happens
+          buildozer --verbose android debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
