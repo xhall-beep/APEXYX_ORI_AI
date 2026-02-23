@@ -7,7 +7,6 @@ on:
 jobs:
   forge:
     runs-on: ubuntu-22.04
-    # Set a generous timeout to ensure complex Kivy builds don't get cut off
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -19,9 +18,9 @@ jobs:
             build-essential libffi-dev libssl-dev python3-dev zip unzip \
             openjdk-17-jdk wget zlib1g-dev autoconf libtool pkg-config \
             cmake libstdc++6 libncurses5 lld
-          # Upgrade build tools to the most stable versions for Kivy 2.3.0
           python3 -m pip install --user --upgrade pip
-          python3 -m pip install --user --upgrade "buildozer==1.5.0" "Cython==0.29.33" "sh"
+          # Locking to highly compatible versions for Kivy 2.3.0
+          python3 -m pip install --user --upgrade "buildozer==1.5.0" "Cython==0.29.33"
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
       - name: Atomic Spec Injection
@@ -37,7 +36,8 @@ jobs:
           requirements = python3,kivy==2.3.0,requests,certifi
           android.api = 33
           android.minapi = 21
-          android.ndk = 25b
+          # Switching to NDK 25c for peak compatibility with API 33
+          android.ndk = 25c
           android.arch = armeabi-v7a
           android.accept_sdk_license = True
           p4a.branch = master
@@ -49,8 +49,8 @@ jobs:
       - name: Sovereign Forge Strike
         run: |
           export PATH=$PATH:/home/runner/.local/bin
-          # Force use of lld linker for faster, more reliable linking
-          export LDFLAGS="-fuse-ld=lld"
+          # Ensure a fresh workspace for the final link
+          buildozer android clean
           yes | buildozer android debug
 
       - name: Upload Sovereign Artifacts
