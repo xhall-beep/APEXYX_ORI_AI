@@ -10,25 +10,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Autonomic Environment Prep
+      - name: Autonomic Hardening & Version Lock
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake libgstreamer1.0-dev
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake
+          # Lock versions to prevent recipe conflicts
+          pip install --upgrade pip
+          pip install "Cython<3.0" wheel "setuptools<70.0.0" buildozer
 
-      - name: Recursive Build Engine
-        id: build_step
+      - name: Recursive Sovereign Build
         run: |
-          pip install --upgrade pip buildozer "setuptools<70.0.0" wheel Cython
+          # Protocol: Auto-Accept Licenses and Force-Inject Specs
+          export PATH=$PATH:~/.local/bin/
           
           build_logic() {
-            echo "::group::Executing Build Strategy"
+            echo "::group::Executing Sovereign Strategy"
             if [ ! -f buildozer.spec ]; then buildozer init; fi
             # Injecting optimized parameters directly into the spec
+            sed -i 's/# android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
             sed -i 's/android.arch = .*/android.arch = armeabi-v7a/' buildozer.spec
+            # The License Hammer
             yes | buildozer -v android debug
           }
 
-          # The Autonomic Retry Loop (3 Attempts with escalating force)
-          build_logic || (echo "Attempt 1 failed. Wiping cache and retrying..." && buildozer clobber && build_logic) || (echo "Attempt 2 failed. Scaling dependencies..." && sudo apt-get install -y libsdl2-dev && build_logic)
+          # Autonomic Retry Logic: Attempt -> Clobber -> Retry
+          build_logic || (echo "Strategy 1 Failed. Purging cache and retrying..." && buildozer clobber && build_logic)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
