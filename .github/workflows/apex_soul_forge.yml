@@ -10,38 +10,56 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Absolute Unified Strike
+      - name: Full-Auto Sovereign Strike
         run: |
           # A. System Level
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6
           
-          # B. Tooling (Direct User Install)
+          # B. Tooling
           python3 -m pip install --user --upgrade "Cython<3.0" wheel "setuptools<70.0.0" buildozer==1.5.0
           
-          # C. Environment Hard-Coding
+          # C. SDK Setup
           export ANDROID_HOME=$HOME/android-sdk
           export PATH=$PATH:$HOME/.local/bin
           mkdir -p $ANDROID_HOME/cmdline-tools
-          
-          # D. SDK Manager Setup (Safe Unzip)
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
           unzip -q commandlinetools-linux-9477386_latest.zip -d $ANDROID_HOME/cmdline-tools
           mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
-          
-          # E. Path Injection
           export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
           
-          # F. License Bypass
+          # D. Licenses
           yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.0"
 
-          # G. Buildozer Execution with Log Capture
-          if [ -f main.py ]; then
+          # E. THE MISSING LINK: Inject Spec directly here
+          cat << 'EOT' > buildozer.spec
+          [app]
+          title = Apexyx Soul
+          package.name = apexyx_soul
+          package.domain = org.montgomery
+          source.dir = .
+          source.include_exts = py,png,jpg,kv,atlas,js,so,dex,conf,sh,txt
+          version = 0.1
+          requirements = python3,kivy==2.3.0,requests,certifi
+          orientation = portrait
+          android.api = 33
+          android.minapi = 21
+          android.ndk = 25b
+          android.arch = armeabi-v7a
+          android.accept_sdk_license = True
+          android.sdk_path = /home/runner/android-sdk
+          p4a.branch = master
+          [buildozer]
+          log_level = 2
+          EOT
+
+          # F. The Strike
+          if [ -f main.py ] && [ -f buildozer.spec ]; then
             buildozer android debug
           else
-            echo "ERROR: main.py is missing from $(pwd)"
-            ls -R
+            echo "ERROR: Critical build files missing!"
+            ls -la
             exit 1
           fi
         env:
