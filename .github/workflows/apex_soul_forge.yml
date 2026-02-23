@@ -27,7 +27,7 @@ jobs:
           yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.0"
 
-      - name: Atomic Spec Injection (Sanitized)
+      - name: Atomic Spec Injection (Absolute)
         run: |
           cat << 'EOT' > buildozer.spec
           [app]
@@ -35,10 +35,8 @@ jobs:
           package.name = apexyx_soul
           package.domain = org.montgomery
           source.dir = .
-          # Sanitized extensions - removed bin to see if it bypasses security flag
-          source.include_exts = py,png,jpg,kv,atlas,js,so,dex,conf,sh
-          # Simplified patterns
-          source.include_patterns = src/*,mobile-deploy/*
+          source.include_exts = py,png,jpg,kv,atlas,js,so,dex,conf,sh,txt
+          # Removed specific patterns to force it to see everything in root
           version = 0.1
           requirements = python3,kivy==2.3.0,requests,certifi
           orientation = portrait
@@ -56,7 +54,9 @@ jobs:
       - name: Final Sovereign Strike
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # Using 'yes' with a direct buildozer call for v22
+          # Verify file presence in the runner environment before strike
+          ls -la
+          if [ ! -f main.py ]; then echo "CRITICAL: main.py not found in root!"; exit 1; fi
           yes | buildozer android debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
