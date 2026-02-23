@@ -6,9 +6,21 @@ on:
 
 jobs:
   forge:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+
+      - name: Sovereign Dependency Injection
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3-pip build-essential git python3-dev \
+            libffi-dev libssl-dev libltdl-dev zlib1g-dev \
+            openjdk-17-jdk zip unzip cmake autoconf libtool
+          
+          # Install Buildozer and Cython pinned for stability
+          pip3 install --user --upgrade "buildozer==1.5.0" "Cython<3.0"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Atomic Spec Injection
         run: |
@@ -32,15 +44,11 @@ jobs:
           log_level = 2
           EOT
 
-      - name: Sovereign Direct-Entry Strike
-        uses: ArtemSerebriakov/buildozer-action@v1
-        with:
-          buildozer_version: stable
-          python_version: 3.11
-          # We force it to run the command directly without complex wrappers
-          command: buildozer android debug
-          repository_path: .
-
+      - name: Sovereign Pure-Script Strike
+        run: |
+          # Use the absolute path to the freshly installed buildozer
+          ~/.local/bin/buildozer android debug
+        
       - name: Upload Sovereign APK
         if: success()
         uses: actions/upload-artifact@v4
