@@ -17,7 +17,9 @@ jobs:
             build-essential libffi-dev libssl-dev python3-dev zip unzip \
             openjdk-17-jdk wget zlib1g-dev autoconf libtool pkg-config \
             cmake libstdc++6 libncurses5
-          python3 -m pip install --user --upgrade "buildozer==1.5.0" "Cython<3.0"
+          # Force specific versioning for Kivy 2.3.0 compatibility
+          python3 -m pip install --user --upgrade pip
+          python3 -m pip install --user --upgrade "buildozer==1.5.0" "Cython==0.29.33" "sh"
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
       - name: Atomic Spec Injection
@@ -39,29 +41,22 @@ jobs:
           p4a.branch = master
           [buildozer]
           log_level = 2
+          warn_on_root = 0
           EOT
 
       - name: Sovereign Forge & Search
         run: |
           export PATH=$PATH:/home/runner/.local/bin
-          yes | buildozer android debug
-          
-          # SEARCH AND RESCUE: Find the APK wherever it moved to
-          echo "Scanning for forged APKs..."
-          mkdir -p final_payload
-          find . -name "*.apk" -exec cp {} final_payload/ \;
-          ls -R final_payload/
+          # Force clean and build with absolute log capture
+          buildozer clean
+          yes | buildozer android debug 2>&1 | tee global_forge.log
 
-      - name: Upload Sovereign APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Apexyx-Sovereign-APK
-          path: final_payload/
-          if-no-files-found: error
-
-      - name: Upload Logs
+      - name: Upload Logs & Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Forge-Debug-Logs
-          path: .buildozer/android/platform/build-*/build/dists/*/bin/*.log
+          name: Sovereign-Full-Trace
+          path: |
+            global_forge.log
+            bin/*.apk
+            .buildozer/android/platform/build-*/build/dists/*/bin/*.apk
