@@ -1,21 +1,21 @@
-from android.runnable import run_on_ui_thread
-from jnius import autoclass
+from kivy.app import App
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
+from kivy.uix.button import Button
 
-# Sovereign Bridge: Pointing to your live Termux Server
-TARGET_URL = "http://127.0.0.1:58080"
+class SovereignUI(BoxLayout):
+    def __init__(self, **kwargs):
+        super().__init__(orientation='vertical', **kwargs)
+        self.add_widget(Label(text="APEXYX SOVEREIGN ELITE v55", font_size='24sp'))
+        self.add_widget(Label(text="Status: ONLINE | Reech Active"))
+        
+        # This button will eventually trigger your terminal commands
+        self.btn = Button(text="INITIALIZE WEALTH AGENT", size_hint=(1, 0.2))
+        self.add_widget(self.btn)
 
-PythonActivity = autoclass('org.kivy.android.PythonActivity')
-WebView = autoclass('android.webkit.WebView')
-WebViewClient = autoclass('android.webkit.WebViewClient')
+class ApexyxApp(App):
+    def build(self):
+        return SovereignUI()
 
-@run_on_ui_thread
-def create_webview():
-    activity = PythonActivity.mActivity
-    webview = WebView(activity)
-    webview.getSettings().setJavaScriptEnabled(True)
-    webview.setWebViewClient(WebViewClient())
-    activity.setContentView(webview)
-    webview.loadUrl(TARGET_URL)
-
-if __name__ == "__main__":
-    create_webview()
+if __name__ == '__main__':
+    ApexyxApp().run()
