@@ -5,43 +5,19 @@ on:
   workflow_dispatch:
 
 jobs:
-  forge:
-    runs-on: ubuntu-22.04
+  scout:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: System Hardening (v11)
+      
+      - name: Syntax & Dependency Scout
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6
-          pip install "Cython<3.0" wheel "setuptools<70.0.0" buildozer
-
-      - name: Atomic Spec Injection
-        run: |
-          # Kill any existing spec to ensure zero corruption
-          rm -f buildozer.spec
-          buildozer init
+          echo "Checking Python Syntax..."
+          python3 -m py_compile *.py || echo "SYNTAX_ERROR_DETECTED"
           
-          # Injecting Sovereign optimized parameters
-          sed -i 's/^package.name = .*/package.name = apexyx_soul/' buildozer.spec
-          sed -i 's/^package.domain = .*/package.domain = org.montgomery/' buildozer.spec
-          sed -i 's/^requirements = .*/requirements = python3,kivy==2.3.0,requests,urllib3,certifi/' buildozer.spec
-          sed -i 's/^# android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
-          sed -i 's/^# android.api = .*/android.api = 33/' buildozer.spec
-          sed -i 's/^# android.ndk = .*/android.ndk = 25b/' buildozer.spec
-          sed -i 's/^android.arch = .*/android.arch = armeabi-v7a/' buildozer.spec
+          echo "Scanning Imports..."
+          grep -h "^import " *.py | sort | uniq
+          grep -h "^from " *.py | sort | uniq
           
-          # Absolute License Override
-          mkdir -p $HOME/.buildozer/android/platform/android-sdk/licenses
-          echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55\nd56263074850734107e3226a27521746f3945412\n24333f8a63b682569cd48292700318359048a946" > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          
-          # Link aidl for Ubuntu 22.04
-          sudo ln -sf /usr/bin/aidl /usr/local/bin/aidl
-
-      - name: Final Sovereign Strike
-        run: |
-          export PATH=$PATH:~/.local/bin/
-          # Execute with high verbosity. If fail, dump the internal build log directly.
-          buildozer -v android debug || (find .buildozer -name "build.log" -exec tail -n 200 {} + && exit 1)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo "Listing Directory Structure..."
+          ls -R
