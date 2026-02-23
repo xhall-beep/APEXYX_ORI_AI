@@ -13,7 +13,7 @@ jobs:
       - name: Sovereign Core Setup
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget zlib1g-dev autoconf libtool pkg-config cmake libstdc++6
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget zlib1g-dev autoconf libtool pkg-config cmake libstdc++6 lld
           python3 -m pip install --user --upgrade "buildozer==1.5.0" "Cython==0.29.33"
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
@@ -27,7 +27,8 @@ jobs:
           source.dir = .
           source.include_exts = py,png,jpg,kv,atlas,js,so,dex,conf,sh,txt
           version = 0.1
-          requirements = python3,kivy==2.3.0,requests,certifi
+          # Added openssl to requirements to fix 10-minute link crashes
+          requirements = python3,kivy==2.3.0,requests,certifi,openssl
           android.api = 33
           android.minapi = 21
           android.ndk = 25b
@@ -41,14 +42,14 @@ jobs:
       - name: Sovereign Forge Strike
         run: |
           export PATH=$PATH:/home/runner/.local/bin
-          # DIRECT BUILD: No clean, no pipe, just raw output
-          yes | buildozer android debug
+          # Capture EVERYTHING to a file so we can read the failure
+          yes | buildozer android debug 2>&1 | tee forge_output.txt
 
-      - name: Upload Sovereign Artifacts
+      - name: Upload Sovereign Diagnostic
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Sovereign-Payload
+          name: Sovereign-Final-Diagnostic
           path: |
+            forge_output.txt
             bin/*.apk
-            .buildozer/android/platform/build-*/build/dists/*/bin/*.apk
