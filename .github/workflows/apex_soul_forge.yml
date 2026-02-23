@@ -10,17 +10,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sovereign Dependency Injection
+      - name: Hard-Coded System Setup
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            python3-pip build-essential git python3-dev \
-            libffi-dev libssl-dev libltdl-dev zlib1g-dev \
-            openjdk-17-jdk zip unzip cmake autoconf libtool
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6
           
-          # Install Buildozer and Cython pinned for stability
-          pip3 install --user --upgrade "buildozer==1.5.0" "Cython<3.0"
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          # Use pipx for isolated, globally accessible binaries
+          sudo apt-get install -y pipx
+          pipx ensurepath
+          pipx install "buildozer==1.5.0"
+          pipx runpip buildozer install "Cython<3.0" setuptools
 
       - name: Atomic Spec Injection
         run: |
@@ -44,10 +43,10 @@ jobs:
           log_level = 2
           EOT
 
-      - name: Sovereign Pure-Script Strike
+      - name: Sovereign Strike
         run: |
-          # Use the absolute path to the freshly installed buildozer
-          ~/.local/bin/buildozer android debug
+          # Use pipx run to ensure the binary is found regardless of pathing
+          pipx run buildozer android debug
         
       - name: Upload Sovereign APK
         if: success()
