@@ -10,36 +10,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Titan Alignment Strike
+      - name: Sovereign Bypass Strike
         run: |
-          # A. System Level + Explicit Java Alignment
+          # A. Force-Inject System Tools
           sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6 python3-venv
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6
           
-          # B. Set Sovereign Java Environment
+          # B. Direct Path Injection (No Venv)
           export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-          export PATH=$JAVA_HOME/bin:$PATH
-          
-          # C. Virtual Clean-Room
-          python3 -m venv venv
-          source venv/bin/activate
-          
-          # D. Tooling
-          pip install --upgrade pip
-          pip install "Cython<3.0" wheel "setuptools<70.0.0" buildozer==1.5.0
-          
-          # E. SDK Deep-Injection
           export ANDROID_HOME=$HOME/android-sdk
+          export PATH=$PATH:$HOME/.local/bin:$JAVA_HOME/bin
+          
+          # C. Install Tooling Globally (Force-Break System Externally Managed)
+          python3 -m pip install --user --upgrade "Cython<3.0" wheel "setuptools<70.0.0" buildozer==1.5.0
+          
+          # D. SDK Setup
           mkdir -p $ANDROID_HOME/cmdline-tools
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
           unzip -q commandlinetools-linux-9477386_latest.zip -d $ANDROID_HOME/cmdline-tools
           mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
           export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
           
-          # F. Force Licenses
+          # E. License Auto-Accept
           yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
           
-          # G. Buildozer Auto-Inject
+          # F. Clean State Spec
           cat << 'EOT' > buildozer.spec
           [app]
           title = Apexyx Soul
@@ -61,9 +56,8 @@ jobs:
           log_level = 2
           EOT
 
-          # H. The Titan Strike
-          # Using --verbose to catch the exact line of failure if it happens
-          buildozer --verbose android debug
+          # G. The Strike: Using 'yes' to bypass any hidden interactive prompts
+          yes | buildozer --verbose android debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
