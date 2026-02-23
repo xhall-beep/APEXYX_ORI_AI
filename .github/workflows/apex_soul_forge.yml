@@ -7,19 +7,10 @@ on:
 jobs:
   forge:
     runs-on: ubuntu-latest
-    container:
-      image: kivy/buildozer:latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Align Workspace Permissions
-        run: |
-          # Give full ownership to the buildozer user (UID 1000 in this image)
-          chown -R 1000:1000 .
-          chmod -R 777 .
-
       - name: Atomic Spec Injection
-        # Run as the container's native user to avoid permission collisions
         run: |
           cat << 'EOT' > buildozer.spec
           [app]
@@ -41,11 +32,15 @@ jobs:
           log_level = 2
           EOT
 
-      - name: Sovereign Non-Root Strike
-        # Use 'su buildozer' to execute the build in its natural habitat
-        run: |
-          su buildozer -c "buildozer android debug"
-        
+      - name: Sovereign Direct-Entry Strike
+        uses: ArtemSerebriakov/buildozer-action@v1
+        with:
+          buildozer_version: stable
+          python_version: 3.11
+          # We force it to run the command directly without complex wrappers
+          command: buildozer android debug
+          repository_path: .
+
       - name: Upload Sovereign APK
         if: success()
         uses: actions/upload-artifact@v4
