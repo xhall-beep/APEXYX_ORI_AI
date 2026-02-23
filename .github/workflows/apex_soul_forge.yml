@@ -10,14 +10,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sovereign Environment Injection
+      - name: Sovereign Core Environment
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget zlib1g-dev autoconf libtool pkg-config cmake libstdc++6
-          
-          # Install Buildozer and Cython in a way that bypasses PEP 668 restrictions
-          python3 -m pip install --user --upgrade "buildozer==1.5.0" "Cython<3.0"
+          python3 -m pip install --user --upgrade "buildozer==1.5.0" "Cython<3.0" setuptools
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
+
+      - name: Auto-License & NDK Injection
+        run: |
+          # Pre-accept Android SDK licenses to prevent interactive hangs
+          mkdir -p $HOME/.android
+          touch $HOME/.android/repositories.cfg
+          yes | sdkmanager --licenses || true
+          
+          # Force the specific NDK version Buildozer expects
+          wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip -q
+          unzip -q android-ndk-r25b-linux.zip -d $HOME/
+          echo "ANDROID_NDK_HOME=$HOME/android-ndk-r25b" >> $GITHUB_ENV
 
       - name: Atomic Spec Injection
         run: |
@@ -43,8 +53,9 @@ jobs:
 
       - name: Sovereign Absolute Strike
         run: |
-          # Force the use of the specific local binary
           export PATH=$PATH:/home/runner/.local/bin
+          # Tell buildozer exactly where the NDK we just downloaded is
+          export APP_ANDROID_NDK_PATH=$HOME/android-ndk-r25b
           buildozer android debug
 
       - name: Upload Sovereign APK
