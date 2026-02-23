@@ -6,9 +6,18 @@ on:
 
 jobs:
   forge:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+
+      - name: Sovereign Environment Injection
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget zlib1g-dev autoconf libtool pkg-config cmake libstdc++6
+          
+          # Install Buildozer and Cython in a way that bypasses PEP 668 restrictions
+          python3 -m pip install --user --upgrade "buildozer==1.5.0" "Cython<3.0"
+          echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
       - name: Atomic Spec Injection
         run: |
@@ -32,13 +41,11 @@ jobs:
           log_level = 2
           EOT
 
-      - name: Sovereign Heavy-Lift Strike
-        # Using a battle-tested action that handles the NDK/SDK handshake
-        uses: GearSnd/buildozer-action@v1
-        with:
-          buildozer_version: stable
-          python_version: 3.11
-          command: buildozer android debug
+      - name: Sovereign Absolute Strike
+        run: |
+          # Force the use of the specific local binary
+          export PATH=$PATH:/home/runner/.local/bin
+          buildozer android debug
 
       - name: Upload Sovereign APK
         if: success()
