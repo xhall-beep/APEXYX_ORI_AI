@@ -13,22 +13,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: System Hardening & SDK Deep-Injection
+      - name: Sovereign Core Injection
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6
           python3 -m pip install --user --upgrade "Cython<3.0" wheel "setuptools<70.0.0" buildozer==1.5.0
           
-          # Force create the SDK landing zone
           mkdir -p $ANDROID_HOME/cmdline-tools
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
           unzip -q commandlinetools-linux-9477386_latest.zip -d $ANDROID_HOME/cmdline-tools
           mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
           
-          # Establish the Path
           export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$HOME/.local/bin
-          
-          # Pre-Accept all licenses via the latest manager
           yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.0"
 
@@ -50,22 +46,21 @@ jobs:
           android.arch = armeabi-v7a
           android.accept_sdk_license = True
           android.sdk_path = /home/runner/android-sdk
-          android.skip_setup = False
           p4a.branch = master
           [buildozer]
           log_level = 2
           EOT
 
-      - name: Final Sovereign Strike
+      - name: Final Sovereign Strike (Diagnostic Mode)
         run: |
-          # Add local bin to path one last time for safety
           export PATH=$PATH:$HOME/.local/bin
-          # Run buildozer through python module to bypass binary pathing issues
-          yes | python3 -m buildozer -v android debug
+          # Direct call with full log capturing
+          buildozer android debug || { echo "CRITICAL_LOG_START"; buildozer --version; ls -R .buildozer; exit 1; }
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Sovereign APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: Apexyx-Sovereign-APK
