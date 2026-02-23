@@ -6,7 +6,7 @@ on:
 
 jobs:
   forge:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -39,15 +39,20 @@ jobs:
           log_level = 2
           EOT
 
-      - name: Sovereign Auto-Consent Strike
+      - name: Sovereign Artifact Strike
         run: |
           export PATH=$PATH:/home/runner/.local/bin
-          # Force-accept all SDK licenses before build starts
+          # Force a clean directory for the SDK
           mkdir -p ~/.android && touch ~/.android/repositories.cfg
-          yes | buildozer android debug || true
-          
-          # Final build attempt with log streaming on failure
-          buildozer android debug || (tail -n 100 buildozer.log && exit 1)
+          # Accept licenses and build, pipe everything to a visible file
+          yes | buildozer android debug 2>&1 | tee full_forge.log
+
+      - name: Upload Logs on Failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Forge-Debug-Logs
+          path: full_forge.log
 
       - name: Upload Sovereign APK
         if: success()
