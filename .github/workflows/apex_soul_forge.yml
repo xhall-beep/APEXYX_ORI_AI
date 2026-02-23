@@ -6,20 +6,17 @@ on:
 
 jobs:
   forge:
-    runs-on: ubuntu-latest
-    container:
-      image: kivy/buildozer:latest
-      options: --user root
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
-      - name: Align Container Environment
+      - name: Hard-Coded System Setup
         run: |
-          chown -R root:root .
-          # Force link the container's internal SDK/NDK paths to the buildozer home
-          mkdir -p /root/.buildozer/android/platform
-          ln -s /home/buildozer/.buildozer/android/platform/android-sdk /root/.buildozer/android/platform/android-sdk || true
-          
+          sudo apt-get update
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget zlib1g-dev autoconf libtool pkg-config cmake libstdc++6
+          python3 -m pip install --user --upgrade "buildozer==1.5.0" "Cython<3.0"
+          echo "/home/runner/.local/bin" >> $GITHUB_PATH
+
       - name: Atomic Spec Injection
         run: |
           cat << 'EOT' > buildozer.spec
@@ -42,11 +39,11 @@ jobs:
           log_level = 2
           EOT
 
-      - name: Sovereign Path-Master Strike
+      - name: Sovereign V-Env Strike
         run: |
-          # Use 'buildozer android debug' with explicit HOME redirection
-          export HOME=/root
-          buildozer --allow-root android debug
+          export PATH=$PATH:/home/runner/.local/bin
+          # Force buildozer to run in a fresh, unrestricted state
+          buildozer android debug || (tail -n 100 buildozer.log && exit 1)
 
       - name: Upload Sovereign APK
         if: success()
