@@ -39,20 +39,17 @@ jobs:
           p4a.branch = master
           [buildozer]
           log_level = 2
-          warn_on_root = 1
           EOT
 
       - name: Sovereign Forge Strike
         run: |
           export PATH=$PATH:/home/runner/.local/bin
-          buildozer clean
-          yes | buildozer android debug 2>&1 | tee global_forge.log
+          # NO CLEAN: Go straight to the forge and let stdout handle the trace
+          yes | buildozer android debug
 
-      - name: Upload Sovereign Artifacts
-        if: always()
+      - name: Upload Sovereign APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Sovereign-Full-Trace
-          path: |
-            global_forge.log
-            bin/*.apk
+          name: Apexyx-Sovereign-APK
+          path: bin/*.apk
