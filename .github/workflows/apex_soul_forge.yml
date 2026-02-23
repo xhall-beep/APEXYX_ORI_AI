@@ -6,35 +6,12 @@ on:
 
 jobs:
   forge:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sovereign Bypass Strike
+      - name: Atomic Spec Injection
         run: |
-          # A. Force-Inject System Tools
-          sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6
-          
-          # B. Direct Path Injection (No Venv)
-          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-          export ANDROID_HOME=$HOME/android-sdk
-          export PATH=$PATH:$HOME/.local/bin:$JAVA_HOME/bin
-          
-          # C. Install Tooling Globally (Force-Break System Externally Managed)
-          python3 -m pip install --user --upgrade "Cython<3.0" wheel "setuptools<70.0.0" buildozer==1.5.0
-          
-          # D. SDK Setup
-          mkdir -p $ANDROID_HOME/cmdline-tools
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-          unzip -q commandlinetools-linux-9477386_latest.zip -d $ANDROID_HOME/cmdline-tools
-          mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
-          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
-          
-          # E. License Auto-Accept
-          yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
-          
-          # F. Clean State Spec
           cat << 'EOT' > buildozer.spec
           [app]
           title = Apexyx Soul
@@ -50,19 +27,20 @@ jobs:
           android.ndk = 25b
           android.arch = armeabi-v7a
           android.accept_sdk_license = True
-          android.sdk_path = /home/runner/android-sdk
           p4a.branch = master
           [buildozer]
           log_level = 2
           EOT
 
-          # G. The Strike: Using 'yes' to bypass any hidden interactive prompts
-          yes | buildozer --verbose android debug
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Sovereign Container Strike
+        uses: ArtemSerebriakov/buildozer-action@v1
+        with:
+          buildozer_version: stable
+          python_version: 3.11
+          command: buildozer android debug
+          repository_path: .
 
       - name: Upload Sovereign APK
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: Apexyx-Sovereign-APK
