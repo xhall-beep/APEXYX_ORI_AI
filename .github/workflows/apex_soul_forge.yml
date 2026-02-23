@@ -10,29 +10,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Full-Auto Sovereign Strike
+      - name: Sovereign V-Env Strike
         run: |
-          # A. System Level
+          # A. System Dependencies
           sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6 python3-venv
           
-          # B. Tooling
-          python3 -m pip install --user --upgrade "Cython<3.0" wheel "setuptools<70.0.0" buildozer==1.5.0
+          # B. Virtual Environment Creation (The Clean Room)
+          python3 -m venv venv
+          source venv/bin/activate
           
-          # C. SDK Setup
+          # C. Tooling inside V-Env
+          pip install --upgrade pip
+          pip install "Cython<3.0" wheel "setuptools<70.0.0" buildozer==1.5.0
+          
+          # D. SDK Setup
           export ANDROID_HOME=$HOME/android-sdk
-          export PATH=$PATH:$HOME/.local/bin
           mkdir -p $ANDROID_HOME/cmdline-tools
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
           unzip -q commandlinetools-linux-9477386_latest.zip -d $ANDROID_HOME/cmdline-tools
           mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
           export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
           
-          # D. Licenses
+          # E. Licenses
           yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.0"
 
-          # E. THE MISSING LINK: Inject Spec directly here
+          # F. Spec Injection
           cat << 'EOT' > buildozer.spec
           [app]
           title = Apexyx Soul
@@ -54,14 +58,8 @@ jobs:
           log_level = 2
           EOT
 
-          # F. The Strike
-          if [ -f main.py ] && [ -f buildozer.spec ]; then
-            buildozer android debug
-          else
-            echo "ERROR: Critical build files missing!"
-            ls -la
-            exit 1
-          fi
+          # G. The Strike (Inside V-Env)
+          buildozer android debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
