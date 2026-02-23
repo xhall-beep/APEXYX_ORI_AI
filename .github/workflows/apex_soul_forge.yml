@@ -7,28 +7,35 @@ on:
 jobs:
   forge:
     runs-on: ubuntu-22.04
-    env:
-      ANDROID_HOME: /home/runner/android-sdk
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sovereign Core Injection
+      - name: Unified Sovereign Strike
         run: |
+          # 1. System Prep
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6
-          python3 -m pip install --user --upgrade "Cython<3.0" wheel "setuptools<70.0.0" buildozer==1.5.0
           
+          # 2. Tooling Injection
+          python3 -m pip install --user --upgrade "Cython<3.0" wheel "setuptools<70.0.0" buildozer==1.5.0
+          export PATH=$PATH:$HOME/.local/bin
+          
+          # 3. SDK/NDK Absolute Pathing
+          export ANDROID_HOME=$HOME/android-sdk
+          export ANDROID_NDK_HOME=$ANDROID_HOME/android-ndk-r25b
           mkdir -p $ANDROID_HOME/cmdline-tools
+          
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
           unzip -q commandlinetools-linux-9477386_latest.zip -d $ANDROID_HOME/cmdline-tools
           mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
           
-          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$HOME/.local/bin
+          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
+          
+          # 4. License & SDK Setup
           yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.0"
 
-      - name: Atomic Spec Injection (Absolute)
-        run: |
+          # 5. Spec Injection
           cat << 'EOT' > buildozer.spec
           [app]
           title = Apexyx Soul
@@ -36,7 +43,6 @@ jobs:
           package.domain = org.montgomery
           source.dir = .
           source.include_exts = py,png,jpg,kv,atlas,js,so,dex,conf,sh,txt
-          # Removed specific patterns to force it to see everything in root
           version = 0.1
           requirements = python3,kivy==2.3.0,requests,certifi
           orientation = portrait
@@ -51,13 +57,8 @@ jobs:
           log_level = 2
           EOT
 
-      - name: Final Sovereign Strike
-        run: |
-          export PATH=$PATH:$HOME/.local/bin
-          # Verify file presence in the runner environment before strike
-          ls -la
-          if [ ! -f main.py ]; then echo "CRITICAL: main.py not found in root!"; exit 1; fi
-          yes | buildozer android debug
+          # 6. The Strike
+          buildozer android debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
