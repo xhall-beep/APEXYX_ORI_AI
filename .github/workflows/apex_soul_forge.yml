@@ -9,19 +9,17 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: kivy/buildozer:latest
-      # Force the container to allow root or map to the buildozer user
-      options: --user root
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fix Directory Permissions
+      - name: Align Workspace Permissions
         run: |
-          chown -R root:root .
-          # Ensure buildozer can create its own hidden folders
-          mkdir -p .buildozer
-          chmod -R 777 .buildozer
+          # Give full ownership to the buildozer user (UID 1000 in this image)
+          chown -R 1000:1000 .
+          chmod -R 777 .
 
       - name: Atomic Spec Injection
+        # Run as the container's native user to avoid permission collisions
         run: |
           cat << 'EOT' > buildozer.spec
           [app]
@@ -43,10 +41,10 @@ jobs:
           log_level = 2
           EOT
 
-      - name: Sovereign User-Flow Strike
+      - name: Sovereign Non-Root Strike
+        # Use 'su buildozer' to execute the build in its natural habitat
         run: |
-          # The --allow-root flag is the key to bypassing the Kivy image block
-          buildozer --allow-root android debug
+          su buildozer -c "buildozer android debug"
         
       - name: Upload Sovereign APK
         if: success()
