@@ -10,11 +10,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: System Hardening
+      - name: System Hardening & SDK Injection
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6
-          pip install "Cython<3.0" wheel "setuptools<70.0.0" buildozer
+          pip install "Cython<3.0" wheel "setuptools<70.0.0" buildozer==1.5.0
+          
+          # Manually download and place SDK Command Line Tools
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          unzip commandlinetools-linux-9477386_latest.zip -d $HOME/android-sdk/cmdline-tools
+          mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
+          
+          # Set Paths for the runner
+          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "PATH=$PATH:$HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/platform-tools" >> $GITHUB_ENV
 
       - name: Sovereign Spec Injection
         run: |
@@ -27,36 +37,28 @@ jobs:
           source.include_exts = py,png,jpg,kv,atlas,js,so,dex,conf,bin,sh
           source.include_patterns = mobile-deploy/*,src/*,src/handlers/*
           version = 0.1
-          requirements = python3,kivy==2.3.0,requests,urllib3,certifi,chardet,idna
+          requirements = python3,kivy==2.3.0
           orientation = portrait
-          osx.python_version = 3
-          osx.kivy_version = 1.9.1
-          fullscreen = 0
-          android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
           android.api = 33
           android.minapi = 21
           android.ndk = 25b
           android.arch = armeabi-v7a
           android.accept_sdk_license = True
-          android.skip_update = False
-          android.copy_libs = 1
+          # Explicitly pointing Buildozer to our manual SDK
+          android.sdk_path = /home/runner/android-sdk
           p4a.branch = master
           [buildozer]
           log_level = 2
-          warn_on_root = 1
           EOT
 
-          # Fix aidl path for the runner
-          sudo ln -sf /usr/bin/aidl /usr/local/bin/aidl
-          
-          # Inject License Hashes directly into the predicted SDK path
-          mkdir -p $HOME/.buildozer/android/platform/android-sdk/licenses
-          echo -e "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56263074850734107e3226a27521746f3945412\n24333f8a63b682569cd48292700318359048a946" > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          # Inject License Hashes
+          mkdir -p /home/runner/android-sdk/licenses
+          echo -e "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56263074850734107e3226a27521746f3945412\n24333f8a63b682569cd48292700318359048a946" > /home/runner/android-sdk/licenses/android-sdk-license
 
       - name: Final Sovereign Strike
         run: |
           export PATH=$PATH:~/.local/bin/
-          # No pipe, no redirect, just pure verbose execution to see the exact crash line
+          # Force buildozer to use the path we set
           buildozer -v android debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
