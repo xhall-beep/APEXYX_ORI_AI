@@ -10,55 +10,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Unified Sovereign Strike
+      - name: Absolute Unified Strike
         run: |
-          # 1. System Prep
+          # A. System Level
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6
           
-          # 2. Tooling Injection
+          # B. Tooling (Direct User Install)
           python3 -m pip install --user --upgrade "Cython<3.0" wheel "setuptools<70.0.0" buildozer==1.5.0
-          export PATH=$PATH:$HOME/.local/bin
           
-          # 3. SDK/NDK Absolute Pathing
+          # C. Environment Hard-Coding
           export ANDROID_HOME=$HOME/android-sdk
-          export ANDROID_NDK_HOME=$ANDROID_HOME/android-ndk-r25b
+          export PATH=$PATH:$HOME/.local/bin
           mkdir -p $ANDROID_HOME/cmdline-tools
           
+          # D. SDK Manager Setup (Safe Unzip)
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
           unzip -q commandlinetools-linux-9477386_latest.zip -d $ANDROID_HOME/cmdline-tools
           mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
           
+          # E. Path Injection
           export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
           
-          # 4. License & SDK Setup
+          # F. License Bypass
           yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.0"
 
-          # 5. Spec Injection
-          cat << 'EOT' > buildozer.spec
-          [app]
-          title = Apexyx Soul
-          package.name = apexyx_soul
-          package.domain = org.montgomery
-          source.dir = .
-          source.include_exts = py,png,jpg,kv,atlas,js,so,dex,conf,sh,txt
-          version = 0.1
-          requirements = python3,kivy==2.3.0,requests,certifi
-          orientation = portrait
-          android.api = 33
-          android.minapi = 21
-          android.ndk = 25b
-          android.arch = armeabi-v7a
-          android.accept_sdk_license = True
-          android.sdk_path = /home/runner/android-sdk
-          p4a.branch = master
-          [buildozer]
-          log_level = 2
-          EOT
-
-          # 6. The Strike
-          buildozer android debug
+          # G. Buildozer Execution with Log Capture
+          if [ -f main.py ]; then
+            buildozer android debug
+          else
+            echo "ERROR: main.py is missing from $(pwd)"
+            ls -R
+            exit 1
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
