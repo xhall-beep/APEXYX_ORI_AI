@@ -7,32 +7,32 @@ on:
 jobs:
   forge:
     runs-on: ubuntu-22.04
+    env:
+      ANDROID_HOME: /home/runner/android-sdk
+      ANDROID_NDK_HOME: /home/runner/android-sdk/android-ndk-r25b
     steps:
       - uses: actions/checkout@v4
 
-      - name: System Hardening & SDK Injection
+      - name: System Hardening & SDK Deep-Injection
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6
-          pip install "Cython<3.0" wheel "setuptools<70.0.0" buildozer==1.5.0
+          python3 -m pip install --user --upgrade "Cython<3.0" wheel "setuptools<70.0.0" buildozer==1.5.0
           
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-          unzip commandlinetools-linux-9477386_latest.zip -d $HOME/android-sdk/cmdline-tools
-          mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
+          # Force create the SDK landing zone
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          unzip -q commandlinetools-linux-9477386_latest.zip -d $ANDROID_HOME/cmdline-tools
+          mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
           
-          # Set Environments
-          export ANDROID_HOME=$HOME/android-sdk
-          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
+          # Establish the Path
+          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$HOME/.local/bin
           
-          # Force Accept Licenses and Pre-install required components
+          # Pre-Accept all licenses via the latest manager
           yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.0"
-          
-          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-          echo "PATH=$PATH:$HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/platform-tools" >> $GITHUB_ENV
 
-      - name: Sovereign Spec Injection
+      - name: Atomic Spec Injection
         run: |
           cat << 'EOT' > buildozer.spec
           [app]
@@ -41,7 +41,6 @@ jobs:
           package.domain = org.montgomery
           source.dir = .
           source.include_exts = py,png,jpg,kv,atlas,js,so,dex,conf,bin,sh
-          source.include_patterns = mobile-deploy/*,src/*,src/handlers/*
           version = 0.1
           requirements = python3,kivy==2.3.0
           orientation = portrait
@@ -51,6 +50,7 @@ jobs:
           android.arch = armeabi-v7a
           android.accept_sdk_license = True
           android.sdk_path = /home/runner/android-sdk
+          android.skip_setup = False
           p4a.branch = master
           [buildozer]
           log_level = 2
@@ -58,9 +58,10 @@ jobs:
 
       - name: Final Sovereign Strike
         run: |
-          export PATH=$PATH:~/.local/bin/
-          # The "yes" pipe is the hammer that breaks the hang
-          yes | buildozer -v android debug
+          # Add local bin to path one last time for safety
+          export PATH=$PATH:$HOME/.local/bin
+          # Run buildozer through python module to bypass binary pathing issues
+          yes | python3 -m buildozer -v android debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
