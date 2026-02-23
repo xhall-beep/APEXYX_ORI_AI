@@ -7,6 +7,8 @@ on:
 jobs:
   forge:
     runs-on: ubuntu-22.04
+    # Set a generous timeout to ensure complex Kivy builds don't get cut off
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -16,8 +18,10 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             build-essential libffi-dev libssl-dev python3-dev zip unzip \
             openjdk-17-jdk wget zlib1g-dev autoconf libtool pkg-config \
-            cmake libstdc++6 libncurses5
-          python3 -m pip install --user --upgrade "buildozer==1.5.0" "Cython==0.29.33"
+            cmake libstdc++6 libncurses5 lld
+          # Upgrade build tools to the most stable versions for Kivy 2.3.0
+          python3 -m pip install --user --upgrade pip
+          python3 -m pip install --user --upgrade "buildozer==1.5.0" "Cython==0.29.33" "sh"
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
       - name: Atomic Spec Injection
@@ -39,17 +43,21 @@ jobs:
           p4a.branch = master
           [buildozer]
           log_level = 2
+          warn_on_root = 1
           EOT
 
       - name: Sovereign Forge Strike
         run: |
           export PATH=$PATH:/home/runner/.local/bin
-          # NO CLEAN: Go straight to the forge and let stdout handle the trace
+          # Force use of lld linker for faster, more reliable linking
+          export LDFLAGS="-fuse-ld=lld"
           yes | buildozer android debug
 
-      - name: Upload Sovereign APK
-        if: success()
+      - name: Upload Sovereign Artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx-Sovereign-APK
-          path: bin/*.apk
+          name: Sovereign-Full-Trace
+          path: |
+            bin/*.apk
+            .buildozer/android/platform/build-*/build/dists/*/bin/*.apk
