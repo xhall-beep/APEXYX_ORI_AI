@@ -6,34 +6,38 @@ on:
 
 jobs:
   forge:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
-      - name: Autonomic Hardening & Version Lock
+      - name: Autonomic Environment Hardening
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake
-          # Lock versions to prevent recipe conflicts
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake libgstreamer1.0-dev aidl libstdc++6
+          # Version Anchor for Stability
           pip install --upgrade pip
           pip install "Cython<3.0" wheel "setuptools<70.0.0" buildozer
 
-      - name: Recursive Sovereign Build
+      - name: Sovereign NDK Pre-Flight
         run: |
-          # Protocol: Auto-Accept Licenses and Force-Inject Specs
+          # Force create buildozer spec if missing and inject critical bypasses
+          if [ ! -f buildozer.spec ]; then buildozer init; fi
+          sed -i 's/# android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
+          sed -i 's/android.arch = .*/android.arch = armeabi-v7a/' buildozer.spec
+          # Injecting the missing aidl link (Common Buildozer Bug)
+          sudo ln -sf /usr/bin/aidl /usr/local/bin/aidl
+
+      - name: Recursive Autonomic Build
+        run: |
           export PATH=$PATH:~/.local/bin/
           
           build_logic() {
             echo "::group::Executing Sovereign Strategy"
-            if [ ! -f buildozer.spec ]; then buildozer init; fi
-            # Injecting optimized parameters directly into the spec
-            sed -i 's/# android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
-            sed -i 's/android.arch = .*/android.arch = armeabi-v7a/' buildozer.spec
-            # The License Hammer
-            yes | buildozer -v android debug
+            # Attempt build with auto-license acceptance
+            yes | buildozer -v android debug || return 1
           }
 
-          # Autonomic Retry Logic: Attempt -> Clobber -> Retry
-          build_logic || (echo "Strategy 1 Failed. Purging cache and retrying..." && buildozer clobber && build_logic)
+          # The Loop: Attempt -> Self-Heal (Clobber) -> Final Retry
+          build_logic || (echo "Strategy 1 Failed. Initiating Clobber & Deep Re-build..." && buildozer clobber && build_logic)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
