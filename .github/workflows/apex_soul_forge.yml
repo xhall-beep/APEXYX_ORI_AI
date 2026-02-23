@@ -10,39 +10,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sovereign Mirror-Shield (Hard Override)
+      - name: Environment Hardening
         run: |
-          # Bypassing GHA Mirror Corruption
           sudo sed -i 's|http://azure.archive.ubuntu.com/ubuntu/|http://archive.ubuntu.com/ubuntu/|g' /etc/apt/sources.list
-          sudo rm -rf /var/lib/apt/lists/*
-          sudo apt-get clean
-          
-          # Attempt update but DO NOT FAIL the job if it hits a mirror snag
           sudo apt-get update || true
-          
-          # Force install core dependencies - Ignore errors if already present
           sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget python3-pip zlib1g-dev autoconf libtool pkg-config cmake aidl libstdc++6 || true
-          
-          # Version Anchor (Crucial for Buildozer stability)
           pip install --upgrade pip
           pip install "Cython<3.0" wheel "setuptools<70.0.0" buildozer
 
       - name: Sovereign NDK Pre-Flight
         run: |
           if [ ! -f buildozer.spec ]; then buildozer init; fi
+          # Force Debug Logging and License Bypass
+          sed -i 's/log_level = .*/log_level = 2/' buildozer.spec
           sed -i 's/# android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
           sed -i 's/android.arch = .*/android.arch = armeabi-v7a/' buildozer.spec
-          # Ensure aidl is linked even if apt failed
           sudo ln -sf /usr/bin/aidl /usr/local/bin/aidl || true
 
       - name: Recursive Autonomic Build
         run: |
           export PATH=$PATH:~/.local/bin/
-          build_logic() {
-            echo "::group::Executing Sovereign Strategy"
-            yes | buildozer -v android debug || return 1
-          }
-          # Autonomic Retry: Attempt -> Clobber -> Final Strike
-          build_logic || (echo "Strategy 1 Failed. Clobbering..." && buildozer clobber && build_logic)
+          # Strategy 1: Build & Print Logs on Fail
+          if ! yes | buildozer -v android debug; then
+            echo "STRIKE FAILED. EXTRACTING INTERNAL ORACLE LOGS..."
+            # Find the actual log file and dump it
+            find .buildozer -name "build.log" -exec tail -n 200 {} +
+            exit 1
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
