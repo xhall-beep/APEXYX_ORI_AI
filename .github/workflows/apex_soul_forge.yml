@@ -9,8 +9,17 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: kivy/buildozer:latest
+      # Force the container to allow root or map to the buildozer user
+      options: --user root
     steps:
       - uses: actions/checkout@v4
+
+      - name: Fix Directory Permissions
+        run: |
+          chown -R root:root .
+          # Ensure buildozer can create its own hidden folders
+          mkdir -p .buildozer
+          chmod -R 777 .buildozer
 
       - name: Atomic Spec Injection
         run: |
@@ -34,10 +43,10 @@ jobs:
           log_level = 2
           EOT
 
-      - name: Sovereign Industrial Strike
+      - name: Sovereign User-Flow Strike
         run: |
-          # The Kivy image has everything pre-installed. Just build.
-          buildozer android debug
+          # The --allow-root flag is the key to bypassing the Kivy image block
+          buildozer --allow-root android debug
         
       - name: Upload Sovereign APK
         if: success()
