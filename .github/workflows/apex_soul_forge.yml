@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Path Sync
+        run: pwd && ls -R
       
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -24,7 +26,7 @@ jobs:
       - name: Force Full Compile
         run: |
           export PATH=$PATH:~/.local/bin
-          buildozer -v android debug || exit 1
+          buildozer -v android debug || (echo "FORGE_FAILURE" && exit 1) || exit 1
 
       - name: Runner Audit
         run: find . -name "*.apk"
