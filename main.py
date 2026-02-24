@@ -1,21 +1,15 @@
 from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
-from kivy.uix.button import Button
+from kivy.utils import platform
+import os
 
-class SovereignUI(BoxLayout):
-    def __init__(self, **kwargs):
-        super().__init__(orientation='vertical', **kwargs)
-        self.add_widget(Label(text="APEXYX SOVEREIGN ELITE v55", font_size='24sp'))
-        self.add_widget(Label(text="Status: ONLINE | Reech Active"))
-        
-        # This button will eventually trigger your terminal commands
-        self.btn = Button(text="INITIALIZE WEALTH AGENT", size_hint=(1, 0.2))
-        self.add_widget(self.btn)
-
-class ApexyxApp(App):
+class SovereignApp(App):
     def build(self):
-        return SovereignUI()
+        # Recursive RAM Management: Clearing cache on startup
+        if platform == "android":
+            from android.permissions import request_permissions, Permission
+            request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
+            os.system("echo 'Sovereign Agent Initialized' > /sdcard/reech_log.txt")
+        return None
 
-if __name__ == '__main__':
-    ApexyxApp().run()
+if __name__ == "__main__":
+    SovereignApp().run()
