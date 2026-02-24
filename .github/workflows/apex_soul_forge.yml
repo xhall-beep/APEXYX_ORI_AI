@@ -1,30 +1,36 @@
-name: Apexyx Sovereign OMEGA-FORGE
-on: [push]
+name: Apexyx Sovereign ULTIMATE-FORGE
+on:
   workflow_dispatch:
+  push:
+    branches: [ main, sovereign-alignment ]
+
 jobs:
-  build:
-    runs-on: ubuntu-22.04
-  workflow_dispatch:
+  forge:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: '3.10'}
-  workflow_dispatch:
-      - name: Cache Buildozer
-        uses: actions/cache@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          path: /home/runner/work/APEXYX_ORI_AI/APEXYX_ORI_AI/**/*.apk
-          key: ${{ runner.os }}-buildozer-OMEGA-V2
-      - name: System Align
-        run: sudo apt-get update && sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget zlib1g-dev autoconf libtool pkg-config cmake libstdc++6 lld
-      - name: Build Tools
-        run: pip install --upgrade pip "buildozer>=1.5.0" "Cython==0.29.33" virtualenv
-      - name: Forge APK
-        run: | 
-          set -e 
-          buildozer -v android debug
+          python_version: '3.11'
+
+      - name: Install Buildozer dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-setuptools 
+          pip install --user --upgrade buildozer Cython==0.29.33
+
+      - name: Force Full Compile
+        run: |
+          export PATH=$PATH:~/.local/bin
+          buildozer -v android debug || exit 1
+
       - name: Runner Audit
         run: find . -name "*.apk"
-      - name: Upload Sovereign APK
+
+      - name: Upload Sovereign Artifact
         uses: actions/upload-artifact@v4
-        with: {name: Apexyx-Sovereign-FINAL, path: /home/runner/work/APEXYX_ORI_AI/APEXYX_ORI_AI/**/*.apk
+        with:
+          name: Apexyx-Sovereign-FINAL
+          path: ./**/*.apk
