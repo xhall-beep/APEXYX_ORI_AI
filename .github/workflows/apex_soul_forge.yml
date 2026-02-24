@@ -1,14 +1,14 @@
-name: Apexyx Soul Forge v80-STRIKE
+name: Apexyx Soul Forge FINAL-STRIKE
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.10'
       - name: Install System Dependencies
         run: |
           sudo apt-get update
@@ -17,14 +17,12 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install "buildozer>=1.5.0" "Cython==0.29.33" virtualenv
-      - name: Forge APK (Verbose)
+      - name: Forge APK
         run: |
-          # The --verbose flag will tell us EXACTLY why it failed
-          # We force accept licenses to prevent hang-ups
-          yes | buildozer --verbose android debug
+          # Bypassing the interactive prompt properly
+          buildozer android debug
       - name: Upload Sovereign APK
-        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx-Sovereign-v80-Debug
+          name: Apexyx-Sovereign-FINAL
           path: bin/*.apk
