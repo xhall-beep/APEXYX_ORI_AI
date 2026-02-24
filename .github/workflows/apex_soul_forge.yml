@@ -1,4 +1,4 @@
-name: Apexyx Soul Forge v80
+name: Apexyx Soul Forge v80-STRIKE
 on: [push]
 jobs:
   build:
@@ -9,17 +9,22 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install dependencies
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libsqlite3-dev zlib1g-dev
-          pip install buildozer cython==0.29.33
-      - name: Build with Buildozer
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget zlib1g-dev autoconf libtool pkg-config cmake libstdc++6 lld
+      - name: Install Build Tools
         run: |
-          # Build as a static binary for arm64 (Pixel 8 Pro)
-          buildozer android debug
-      - name: Upload APK
+          pip install --upgrade pip
+          pip install "buildozer>=1.5.0" "Cython==0.29.33" virtualenv
+      - name: Forge APK (Verbose)
+        run: |
+          # The --verbose flag will tell us EXACTLY why it failed
+          # We force accept licenses to prevent hang-ups
+          yes | buildozer --verbose android debug
+      - name: Upload Sovereign APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx_Soul_v80
+          name: Apexyx-Sovereign-v80-Debug
           path: bin/*.apk
