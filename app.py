@@ -1,4 +1,4 @@
-import os https://monica.im/share/chat?shareId=HbTF7xSllhIRFwiD
+import os
 from flask import Flask, jsonify, request
 from dotenv import load_dotenv
 
