@@ -18,6 +18,8 @@ jobs:
           python_version: '3.11'
 
       - name: Install Buildozer dependencies
+      - name: License Force-Accept
+        run: yes | sdkmanager --licenses || true
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev libssl-dev python3-setuptools 
