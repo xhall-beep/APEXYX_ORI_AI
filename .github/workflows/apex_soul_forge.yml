@@ -20,7 +20,9 @@ jobs:
       - name: Build Tools
         run: pip install --upgrade pip "buildozer>=1.5.0" "Cython==0.29.33" virtualenv
       - name: Forge APK
-        run: buildozer -v android debug
+        run: | 
+          set -e 
+          buildozer -v android debug
       - name: Upload Sovereign APK
         uses: actions/upload-artifact@v4
         with: {name: Apexyx-Sovereign-FINAL, path: ./**/*.apk}
