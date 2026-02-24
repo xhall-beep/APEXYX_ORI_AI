@@ -1,14 +1,14 @@
 [app]
 title = REECH Shell
-package.name = reechshell
-package.domain = org.reech
+package.name = reech_sovereign_v80
+package.domain = org.svontz
 source.dir = .
 source.include_exts = py
-version = 0.1.4
+version = 0.8.0
 requirements = python3, hostpython3
 p4a.bootstrap = webview
-android.api = 34
-android.minapi = 24
+android.api = 35
+android.minapi = 26
 android.ndk = 27c
 android.permissions = INTERNET, ACCESS_NETWORK_STATE
 android.archs = arm64-v8a
