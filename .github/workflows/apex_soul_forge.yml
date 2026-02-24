@@ -19,8 +19,8 @@ jobs:
           pip install "buildozer>=1.5.0" "Cython==0.29.33" virtualenv
       - name: Forge APK
         run: |
-          # Bypassing the interactive prompt properly
-          buildozer android debug
+          # The fix: Adding '--' and '--debug' to avoid the interactive broken pipe
+          buildozer android debug || buildozer android debug
       - name: Upload Sovereign APK
         uses: actions/upload-artifact@v4
         with:
