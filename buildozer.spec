@@ -1,6 +1,6 @@
 [app]
-title = REECH Shell
-package.name = reech_sovereign_v80
+title = APEXYX_ORI
+package.name = apexyx_ori
 package.domain = org.svontz
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json
