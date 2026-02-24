@@ -1,52 +1,25 @@
-name: Apexyx Soul Forge Elite
-on:
-  push:
-    branches: [ sovereign-alignment ]
-  workflow_dispatch:
-
+name: Apexyx Soul Forge v80
+on: [push]
 jobs:
-  forge:
-    runs-on: ubuntu-22.04
+  build:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Sovereign Core Setup
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk wget zlib1g-dev autoconf libtool pkg-config cmake libstdc++6 lld
-          python3 -m pip install --user --upgrade "buildozer==1.5.0" "Cython==0.29.33"
-          echo "/home/runner/.local/bin" >> $GITHUB_PATH
-
-      - name: Atomic Spec Injection
+          sudo apt-get install -y libsqlite3-dev zlib1g-dev
+          pip install buildozer cython==0.29.33
+      - name: Build with Buildozer
         run: |
-          cat << 'EOT' > buildozer.spec
-          [app]
-          title = Apexyx Soul
-          package.name = apexyx_soul
-          package.domain = org.montgomery
-          source.dir = .
-          source.include_exts = py,png,jpg,kv,atlas,js,so,dex,conf,sh,txt
-          version = 0.1
-          # Elite requirements for high-leverage functionality
-          requirements = python3,kivy==2.3.0,requests,certifi,openssl,sqlite3
-          android.api = 33
-          android.minapi = 21
-          android.ndk = 25b
-          android.arch = arm64-v8a
-          android.accept_sdk_license = True
-          p4a.branch = master
-          [buildozer]
-          log_level = 2
-          EOT
-
-      - name: Sovereign Forge Strike
-        run: |
-          export PATH=$PATH:/home/runner/.local/bin
-          # Optimized for arm64-v8a high-performance architecture
-          yes | buildozer android debug 2>&1 | tee forge_output.txt
-
-      - name: Upload Sovereign APK
+          # Build as a static binary for arm64 (Pixel 8 Pro)
+          buildozer android debug
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx-Sovereign-Elite
+          name: Apexyx_Soul_v80
           path: bin/*.apk
