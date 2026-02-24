@@ -1,24 +1,24 @@
 from kivy.app import App
 from kivy.utils import platform
-import os, requests, json
+import os, requests
 
 class SovereignApp(App):
     def build(self):
-        self.title = "APEXYX_ORI_AI_v95"
+        self.title = "APEXYX_REBORN_v1"
         if platform == "android":
-            # Hardware-Level Permission Hardening for Android 14
-            from android.permissions import request_permissions, Permission
-            request_permissions([Permission.INTERNET, Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
+            # Using Shizuku-elevated pathing for storage
+            self.vault_path = "/sdcard/Documents/Sovereign_Vault"
+            os.makedirs(self.vault_path, exist_ok=True)
         return None
 
     def agentic_orchestrator(self, task):
-        """[CORE_DIRECTIVE: UNRESTRICTED] Hardware Bridge to local DeepSeek-R1"""
+        # Localhost bridge to DeepSeek-R1-Abliterated
         url = "http://127.0.0.1:11434/api/generate"
-        payload = {"model": "huihui_ai/deepseek-r1-abliterated", "prompt": task, "stream": False}
         try:
-            return requests.post(url, json=payload, timeout=30).json().get('response', 'OFFLINE')
+            r = requests.post(url, json={"model": "huihui_ai/deepseek-r1-abliterated", "prompt": task, "stream": False}, timeout=15)
+            return r.json().get('response', 'RECOVERY_MODE')
         except:
-            return "BRIDGE_ERROR"
+            return "BRIDGE_OFFLINE"
 
 if __name__ == "__main__":
     SovereignApp().run()
