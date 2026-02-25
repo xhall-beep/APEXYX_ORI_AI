@@ -1,0 +1,37 @@
+name: Apexyx Forge XI
+on:
+  workflow_dispatch:
+
+jobs:
+  forge:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Java Nurture
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: System Nurture
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install Forge Tools
+        run: |
+          pip install --upgrade pip
+          pip install "cython<3.0" buildozer
+      - name: The Forge Ignite
+        run: |
+          yes | buildozer android licenses || true
+          buildozer -v android debug
+      - name: Absolute Asset Search
+        if: always()
+        run: |
+          mkdir -p bin_final
+          find . -name "*.apk" -exec cp {} bin_final/ \;
+      - name: Sovereign Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Apexyx-Soul-Forge-Elite
+          path: bin_final/*.apk
