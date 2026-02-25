@@ -1,0 +1,46 @@
+name: Apexyx Forge XII
+on:
+  workflow_dispatch:
+
+jobs:
+  forge:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 45
+    env:
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk-bundle
+    steps:
+      - uses: actions/checkout@v4
+      - name: Java Nurture
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: System Nurture
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install Forge Tools
+        run: |
+          pip install --upgrade pip
+          pip install "cython<3.0" buildozer
+      - name: The Forge Ignite
+        run: |
+          # Inject pre-installed paths into buildozer.spec
+          sed -i "s|^#\? \?android.sdk_path =.*|android.sdk_path = $ANDROID_SDK_ROOT|" buildozer.spec
+          sed -i "s|^#\? \?android.ndk_path =.*|android.ndk_path = $ANDROID_NDK_HOME|" buildozer.spec
+          # Disable auto-update to prevent the runner from trying to phone home
+          sed -i "s|^#\? \?android.auto_update_sdk =.*|android.auto_update_sdk = False|" buildozer.spec
+          
+          yes | buildozer android licenses || true
+          buildozer -v android debug
+      - name: Absolute Asset Search
+        if: always()
+        run: |
+          mkdir -p bin_final
+          find . -name "*.apk" -exec cp {} bin_final/ \;
+      - name: Sovereign Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Apexyx-Soul-Forge-Elite
+          path: bin_final/*.apk
