@@ -1,5 +1,7 @@
 name: Apexyx Forge V2
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+
 jobs:
   forge:
     runs-on: ubuntu-latest
@@ -19,7 +21,6 @@ jobs:
         if: always()
         run: |
           mkdir -p bin_final
-          # Targeting Buildozer's native output directory directly
           cp bin/*.apk bin_final/ 2>/dev/null || find . -name "*.apk" -exec cp {} bin_final/ \;
           ls -R bin_final/
       - name: Sovereign Upload
