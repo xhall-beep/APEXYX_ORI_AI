@@ -1,0 +1,32 @@
+name: Apexyx Forge V4
+on:
+  workflow_dispatch:
+
+jobs:
+  forge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: System Nurture
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Dependencies
+        run: |
+          pip install buildozer cython==0.29.33
+          sudo apt-get install -y libsqlite3-dev lld
+      - name: Buildozer Clean
+        run: buildozer android clean
+      - name: The Forge Ignite
+        run: buildozer -v android debug
+      - name: Absolute Asset Search
+        if: always()
+        run: |
+          mkdir -p bin_final
+          find . -name "*.apk" -exec cp {} bin_final/ \;
+          ls -R bin_final/
+      - name: Sovereign Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Apexyx-Soul-Forge-Elite
+          path: bin_final/*.apk
