@@ -1,0 +1,39 @@
+name: Apexyx Forge V7
+on:
+  workflow_dispatch:
+
+jobs:
+  forge:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: System Nurture
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install Critical Headers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsqlite3-dev lld libffi-dev libssl-dev autoconf automake libtool pkg-config zlib1g-dev
+      - name: Install Forge Tools
+        run: |
+          pip install --upgrade pip
+          pip install "cython<3.0" buildozer
+      - name: Force License Acceptance
+        run: |
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          yes | buildozer android licenses
+      - name: The Forge Ignite
+        run: buildozer -v android debug
+      - name: Absolute Asset Search
+        if: always()
+        run: |
+          mkdir -p bin_final
+          find . -name "*.apk" -exec cp {} bin_final/ \;
+          ls -R bin_final/
+      - name: Sovereign Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Apexyx-Soul-Forge-Elite
+          path: bin_final/*.apk
