@@ -39,4 +39,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Apexyx-Sovereign-FINAL
-          path: /home/runner/work/APEXYX_ORI_AI/APEXYX_ORI_AI/**/bin/*.apk
+          path: "**/*.apk"
