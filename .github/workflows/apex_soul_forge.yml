@@ -1,42 +1,28 @@
-name: Apexyx Sovereign ULTIMATE-FORGE
-on:
-  workflow_dispatch:
-  push:
-    branches: [ main, sovereign-alignment ]
-
+name: Apexyx Soul Forge Elite
+on: [workflow_dispatch]
 jobs:
   forge:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Path Sync
-        run: pwd && ls -R
-      
-      - name: Setup Python
+      - name: Environment Setup
         uses: actions/setup-python@v5
         with:
-          python_version: '3.11'
-
-      - name: Install Buildozer dependencies
-      - name: License Force-Accept
-        run: yes | sdkmanager --licenses || true
+          python-version: '3.11'
+      - name: Install Pure Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-setuptools 
-          pip install --user --upgrade buildozer Cython==0.29.33
-
-      - name: Force Full Compile
+          pip install buildozer cython==0.29.33
+          sudo apt-get install -y libsqlite3-dev lld
+      - name: The Verbose Forge
+        run: buildozer -v android debug
+      - name: Absolute Asset Search
+        if: always()
         run: |
-          export PATH=$PATH:~/.local/bin
-          buildozer -v android clean buildozer -v android debugbuildozer -v android debug buildozer -v android debug || (echo "FORGE_FAILURE" && exit 1) || exit 1
-
-      - name: Emergency File Dump
-        run: find . -maxdepth 4 -not -path "*/.*"
-      - name: Runner Audit
-        run: find . -name "*.apk"
-
-      - name: Upload Sovereign Artifact
+          mkdir -p bin_final
+          find . -name "*.apk" -exec cp {} bin_final/ \;
+          ls -R bin_final/
+      - name: Sovereign Upload
         uses: actions/upload-artifact@v4
         with:
-          name: Apexyx-Sovereign-FINAL
-          path: bin/*.apk
+          name: Apexyx-Soul-Forge-Elite
+          path: bin_final/*.apk
