@@ -54,3 +54,6 @@ window_dump.xml
 .buildozer/
 .buildozer/
 bin/
+
+# Node.js
+node_modules/

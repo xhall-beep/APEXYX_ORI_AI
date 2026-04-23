@@ -1,0 +1,13 @@
+{
+  "name": "apexyx-ori-ai",
+  "version": "1.0.0",
+  "description": "SCH Omni System Dashboard with Vercel Speed Insights",
+  "type": "module",
+  "scripts": {
+    "build": "echo 'No build step required'"
+  },
+  "dependencies": {
+    "@vercel/speed-insights": "^1.0.0"
+  },
+  "private": true
+}
