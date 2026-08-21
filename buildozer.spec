@@ -6,12 +6,12 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json,txt
 version = 1.0.0
 
-# NOTE: requirements is deliberately limited to packages that have a
-# python-for-android recipe or are pure-python. The desktop/server stack this
-# project also uses (frida, androguard, adbutils, fastapi, uvicorn, mcp,
-# pydantic_ai, GitPython) has NO p4a recipe and cannot be bundled into an APK;
-# those modules must run on the Termux/host side, not inside the packaged app.
-requirements = python3,kivy,requests,certifi,urllib3,charset-normalizer,idna
+# NOTE: main.py (APEXYX Mesh Console) is fully self-contained: kivy + stdlib
+# sqlite3/hashlib only, all bundleable by python-for-android. Keeping this list
+# minimal maximizes build success. The desktop/server stack in this repo
+# (server_main.py, frida, androguard, adbutils, fastapi, uvicorn, mcp,
+# pydantic_ai, GitPython) has NO p4a recipe and intentionally stays host-side.
+requirements = python3,kivy
 
 orientation = portrait
 fullscreen = 0
