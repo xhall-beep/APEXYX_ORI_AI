@@ -39,4 +39,13 @@ jobs:
         run: deno lint
 
       - name: Run tests
-        run: deno test -A
+        # This repo currently has no Deno test files (it is a Python
+        # project; the js/ dir holds Frida utility scripts). Run the
+        # suite only when test files exist so the step does not fail
+        # with "No test modules found".
+        run: |
+          if [ -n "$(find . -name '*_test.ts' -o -name '*.test.ts' -o -name 'test.ts' | head -1)" ]; then
+            deno test -A
+          else
+            echo "No Deno test files found - skipping"
+          fi
