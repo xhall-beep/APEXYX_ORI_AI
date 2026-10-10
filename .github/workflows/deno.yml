@@ -36,7 +36,15 @@ jobs:
       #   run: deno fmt --check
 
       - name: Run linter
-        run: deno lint
+        # The js/ dir holds third-party Frida scripts excluded in deno.json.
+        # With nothing left to lint, `deno lint` exits 1 ("No target files
+        # found"), so only run it when lintable files exist outside js/.
+        run: |
+          if [ -n "$(find . \( -name '*.ts' -o -name '*.js' \) -not -path './js/*' | head -1)" ]; then
+            deno lint
+          else
+            echo "No Deno-lintable files outside js/ - skipping"
+          fi
 
       - name: Run tests
         # This repo currently has no Deno test files (it is a Python
