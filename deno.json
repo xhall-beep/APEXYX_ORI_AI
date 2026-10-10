@@ -1,0 +1,11 @@
+{
+  // The js/ directory holds third-party/minified Frida instrumentation
+  // scripts (SSL unpinning, dex dumping, etc.) - not project source code.
+  // Linting them produces thousands of diagnostics, so they are excluded.
+  "lint": {
+    "exclude": ["js/"]
+  },
+  "fmt": {
+    "exclude": ["js/"]
+  }
+}
