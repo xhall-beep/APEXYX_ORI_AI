@@ -1,56 +1,40 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-.iml
-*injectXServer.js
-*spider.js
-com.guazi*
-com.ganji*
-*.python-version
-*/xinit/*.dex
-*pydevproject
-.DS_Store
-log
-.*source/.*
-com.example.myapplication/
-__handlers__/
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Build outputs
 build/
-__pycache__
+dist/
+target/
 *.jar
+*.apk
+*.aab
+
+# IDE
 .idea/
+.vscode/
 .classpath
 .project
 .settings/
-target/
-logs/
-data/doc/
-data/test/
-.vscode/
-com.*
-cn.com.*
-=======
-        actionable_deploy_your_recommendations_send_me_a_copy_as_if_you_were_reach_using_external_libraries_with_full_web_access_and_full_permissions(f"[{AGENT_NAME}]: All systems analyzed and optimized. Awaiting final command to DEPLOY, ACCOMPLISH, COMPLETE INPUT AND PUBLISH PRIVATELY FULLY.").env
-__pycache__/
-*.pyc
+*.iml
+
+# OS
 .DS_Store
-venv/
->>>>>>> omni/master
-=======
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
+Thumbs.db
 
-# Virtual environments
-.venv
+# Logs
+logs/
+*.log
+log/
 
-# Misc files
-debug.py
-window_dump.xml
->>>>>>> mcp/main
-.buildozer/
-.buildozer/
-.buildozer/
-bin/
+# Security tooling (do not commit)
+frida-server*
+frpc_*
+tcpforward_*
+TheFatRat/
+
+# Misc
+*.dex
