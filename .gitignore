@@ -38,3 +38,9 @@ TheFatRat/
 
 # Misc
 *.dex
+
+# Added 2026-11-06 (weave2): build/run artifacts and notebook copies
+*.out
+build_log.txt
+*-copy.ipynb
+copy_of_*.ipynb
